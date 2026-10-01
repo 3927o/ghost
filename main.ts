@@ -5,7 +5,7 @@
  * 运行（项目根目录，Node >= 24 可直接跑 .ts）：
  *   npm start -- ["你的问题"]
  *
- * 模型配置读 .env：MODEL_API_BASE_URL、MODEL_API_KEY、MODEL_NAME。
+ * 模型配置读 .env：MODEL_PROVIDERS、MODEL_PROVIDER、MODEL_NAME，以及各接口的密钥。
  */
 
 import { existsSync } from 'node:fs'
@@ -18,15 +18,13 @@ import type {} from '@deepseek-ai/dsh-agent'
 import { boot } from '@deepseek-ai/dsh-app-boot'
 import { createUserMessage, expandAssistantStream, type TokenUsage } from '@deepseek-ai/dsh-llm'
 import { SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
+import { loadModelConfig } from './model-config.ts'
 
 const rootDir = dirname(fileURLToPath(import.meta.url))
 
 const envFile = join(rootDir, '.env')
 if (existsSync(envFile)) process.loadEnvFile(envFile)
-const model = process.env.MODEL_NAME
-if (process.env.MODEL_API_BASE_URL === undefined || process.env.MODEL_API_KEY === undefined || model === undefined) {
-  throw new Error('MODEL_API_BASE_URL, MODEL_API_KEY and MODEL_NAME must be set (see .env)')
-}
+const { provider, model } = loadModelConfig(process.env)
 
 // boot() 之前设置：DSH_HOME 决定 session 日志落在哪；AGENT_SKILLS_DIR 被 cordis.yml 的 !!js 读取。
 const dshHome = (process.env.DSH_HOME ??= join(rootDir, '.dsh-home'))
@@ -38,6 +36,7 @@ const startedAt = Date.now()
 const stepStartedAt = new Map<string, number>()
 const usageByStep = new Map<string, TokenUsage>()
 let answer = ''
+let turnFailed = false
 
 function preview(text: string, max = 80): string {
   const flat = text.replace(/\s+/g, ' ').trim()
@@ -71,7 +70,11 @@ function describe(event: SessionEvent): string | undefined {
       return `isError=${event.data.message.isError === true}`
     case 'turn/end': {
       const { reason } = event.data
-      return reason.kind === 'error' ? `reason=error ${preview(JSON.stringify(reason.error), 300)}` : `reason=${reason.kind}`
+      if (reason.kind === 'error') {
+        turnFailed = true
+        return `reason=error ${preview(JSON.stringify(reason.error), 300)}`
+      }
+      return `reason=${reason.kind}`
     }
     default:
       return undefined
@@ -93,7 +96,7 @@ const sessionId = SessionId(`ghost-${randomUUID()}`)
 const { agent, dispose } = await agents.create({
   sessionId,
   meta: { cwd: process.cwd() },
-  agentOptions: { provider: 'deepseek-official', model },
+  agentOptions: { provider, model },
 })
 
 try {
@@ -115,7 +118,11 @@ try {
   console.log(`answer : ${answer}`)
   console.log(`usage  : input=${total.inputTokens} output=${total.outputTokens}`)
   console.log(`session: ${logFile === undefined ? '(not found)' : join(sessionsRoot, logFile)}`)
+  if (turnFailed) process.exitCode = 1
 } finally {
-  await dispose()
-  await ctx.fiber.dispose()
+  try {
+    await dispose()
+  } finally {
+    await ctx.fiber.dispose()
+  }
 }
