@@ -1,0 +1,16 @@
+.app {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.retry-button {
+  margin-top: 16px;
+  padding: 10px 20px;
+  color: white;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}

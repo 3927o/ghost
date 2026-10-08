@@ -1,0 +1,47 @@
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  height: 100%;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.channels-list {
+  flex: 1;
+  padding: 12px;
+}
+
+.channel-item {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background-color: var(--bg-hover);
+}
+
+.channel-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.channel-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sidebar-user {
+  padding: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+}

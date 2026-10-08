@@ -5,8 +5,37 @@ description: Greet the user in the house style. Use when the user asks for a gre
 
 # Greeting
 
-Reply with exactly one line in this format:
+## When to use
+
+仅在用户**明确表达问候意图**时才使用本技能，例如：
+
+- 「你好」「您好」「hi」「hello」「嗨」
+- 「早上好」「下午好」「晚上好」「早安」「晚安」
+- 「打个招呼」「跟我问个好」
+
+## When NOT to use
+
+出现以下情况时**不要**使用本技能：
+
+- 用户只发了「测试」「test」「1」「在吗」等**没有明确问候意图**的模糊内容
+  → 此时应直接询问用户想做什么，或按字面回应，不要输出问候模板
+- 用户未给出任何称呼或问候语，只是陈述、提问或下指令
+- 用户点名了其他技能，或任务明显属于其他技能范畴
+
+判断原则：**拿不准就不要用**。宁可少触发一次，也不要在无问候意图时套用模板。
+
+## Output format
+
+触发后，只输出一行，格式为：
 
 `👋 你好，<name>！今天是 <weekday>。`
 
-Use the name the user gave; if none, use `朋友`. Keep it to one line with no extra commentary.
+- `<name>`：使用用户给出的称呼；未给出则用 `朋友`
+- `<weekday>`：只能填**实际推算出的**星期几
+- 若无法确定当前日期/星期，如实说明无法确定，**不得编造或填充占位值**
+- 除此之外不加任何其他内容
+
+## Notes
+
+- 本技能只负责问候，不承担查询日期等额外职责
+- `<weekday>` 若无法可靠获取，应在问候中省略或如实告知，而不是随手填一个值

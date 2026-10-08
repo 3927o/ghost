@@ -1,128 +1,81 @@
 /**
- * 最小嵌入示例：在宿主进程里用 boot() 起一棵精简的 dsh 插件树，
- * 自己创建 agent、投递一条用户消息、等这一轮跑完，并打印 session 事件流。
+ * Ghost Personal Agent - Main Entry Point
  *
- * 运行（项目根目录，Node >= 24 可直接跑 .ts）：
- *   npm start -- ["你的问题"]
+ * Architecture:
+ * - Application Layer: Fastify HTTP server
+ * - Agent Core: Cordis + DSH (agent runtime)
  *
- * 模型配置读 .env：MODEL_PROVIDERS、MODEL_PROVIDER、MODEL_NAME，以及各接口的密钥。
+ * Usage:
+ *   npm start
  */
 
 import { existsSync } from 'node:fs'
-import { randomUUID } from 'node:crypto'
-import { readdir } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
+import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-
-import type {} from '@deepseek-ai/dsh-agent'
-import { boot } from '@deepseek-ai/dsh-app-boot'
-import { createUserMessage, expandAssistantStream, type TokenUsage } from '@deepseek-ai/dsh-llm'
-import { SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
+import { AgentCore } from './src/agent-core/index.ts'
+import { SessionManager } from './src/app/session-manager.ts'
+import { createServer } from './src/app/server.ts'
 import { loadModelConfig } from './model-config.ts'
 
 const rootDir = dirname(fileURLToPath(import.meta.url))
 
+// Load .env
 const envFile = join(rootDir, '.env')
-if (existsSync(envFile)) process.loadEnvFile(envFile)
+if (existsSync(envFile)) {
+  process.loadEnvFile(envFile)
+} else {
+  console.error('Error: .env file not found. Copy .env.example to .env and configure it.')
+  process.exit(1)
+}
+
+// Load and validate model config
 const { provider, model } = loadModelConfig(process.env)
+console.log(`[Main] Using model: ${provider}/${model}`)
 
-// boot() 之前设置：DSH_HOME 决定 session 日志落在哪；AGENT_SKILLS_DIR 被 cordis.yml 的 !!js 读取。
-const dshHome = (process.env.DSH_HOME ??= join(rootDir, '.dsh-home'))
-process.env.AGENT_SKILLS_DIR = join(rootDir, 'skills')
+// Initialize Agent Core
+const agentCore = new AgentCore({
+  dshHome: process.env.DSH_HOME || join(rootDir, 'data', 'sessions'),
+  skillsDir: join(rootDir, 'skills'),
+  modelProvider: provider,
+  modelName: model,
+})
 
-const ctx = await boot('ghost', join(rootDir, 'cordis.yml'))
+await agentCore.init()
+const sessionManager = new SessionManager(agentCore, 30 * 60 * 1000)
 
-const startedAt = Date.now()
-const stepStartedAt = new Map<string, number>()
-const usageByStep = new Map<string, TokenUsage>()
-let answer = ''
-let turnFailed = false
+// Create and start HTTP server
+const server = await createServer({
+  host: process.env.HOST || '0.0.0.0',
+  port: parseInt(process.env.PORT || '3000', 10),
+  sessionManager,
+})
 
-function preview(text: string, max = 80): string {
-  const flat = text.replace(/\s+/g, ' ').trim()
-  return flat.length > max ? `${flat.slice(0, max)}…` : flat
-}
-
-function describe(event: SessionEvent): string | undefined {
-  switch (event.type) {
-    case 'request/header': {
-      const { provider, model } = event.data.header.config
-      return `${provider}/${model} tools=${event.data.header.tools?.length ?? 0}`
-    }
-    case 'step/start':
-      stepStartedAt.set(`${event.data.turn}/${event.data.step}`, event.time)
-      return `turn=${event.data.turn} step=${event.data.step}`
-    case 'assistant/message': {
-      const key = `${event.data.turn}/${event.data.step}`
-      // 流里每个 chunk 都带 epoch 毫秒时间戳；首 chunk 减 step 开始时间即首包延迟。
-      const chunks = expandAssistantStream(event.data.stream)
-      const stepStart = stepStartedAt.get(key)
-      const ttft = chunks[0] === undefined || stepStart === undefined ? '?' : `${chunks[0].time - stepStart}ms`
-      const text = event.data.message.content.filter(block => block.type === 'text').map(block => block.text).join('')
-      if (text !== '') answer = text
-      if (event.data.usage !== undefined) usageByStep.set(key, event.data.usage)
-      const usage = event.data.usage === undefined ? '' : ` usage=${JSON.stringify(event.data.usage)}`
-      return `chunks=${chunks.length} ttft=${ttft}${usage} text="${preview(text)}"`
-    }
-    case 'tool/call':
-      return `${event.data.name}(${preview(event.data.arguments)})`
-    case 'tool/result':
-      return `isError=${event.data.message.isError === true}`
-    case 'turn/end': {
-      const { reason } = event.data
-      if (reason.kind === 'error') {
-        turnFailed = true
-        return `reason=error ${preview(JSON.stringify(reason.error), 300)}`
-      }
-      return `reason=${reason.kind}`
-    }
-    default:
-      return undefined
+// The entry point owns shutdown order: requests, application sessions, runtime.
+server.addHook('onClose', async () => {
+  try {
+    await sessionManager.dispose()
+  } finally {
+    await agentCore.dispose()
   }
+})
+
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.once(signal, async () => {
+    server.log.info(`Received ${signal}, shutting down gracefully...`)
+    await server.close()
+    process.exit(0)
+  })
 }
-
-// 所有 session 事件都会经过这里；这就是后续 trace 插件要订阅的同一条流。
-ctx.on('session/event', (_session, event) => {
-  const detail = describe(event)
-  const at = String(event.time - startedAt).padStart(6)
-  console.log(`[${at}ms] ${event.type.padEnd(22)}${detail === undefined ? '' : ` ${detail}`}`)
-})
-
-const agents = ctx.get('agents')
-const sessions = ctx.get('sessions')
-if (agents === undefined || sessions === undefined) throw new Error('agents/sessions service missing')
-
-const sessionId = SessionId(`ghost-${randomUUID()}`)
-const { agent, dispose } = await agents.create({
-  sessionId,
-  meta: { cwd: process.cwd() },
-  agentOptions: { provider, model },
-})
 
 try {
-  const task = process.argv[2] ?? '用 greeting 技能跟我打个招呼，我叫 Richard。'
-  await agent.whenIdle()
-  agent.followup(createUserMessage({ content: [{ type: 'text', text: task }], source: { kind: 'user' } }))
-  await agent.whenIdle()
-  await sessions.flush(agent.session)
-
-  const total = [...usageByStep.values()].reduce(
-    (sum, step) => ({ inputTokens: sum.inputTokens + step.inputTokens, outputTokens: sum.outputTokens + step.outputTokens }),
-    { inputTokens: 0, outputTokens: 0 },
-  )
-  const sessionsRoot = join(dshHome, 'sessions')
-  const logFile = (await readdir(sessionsRoot, { recursive: true }))
-    .find(entry => entry.includes(sessionId) && entry.endsWith('.jsonl'))
-
-  console.log('\n── result ──')
-  console.log(`answer : ${answer}`)
-  console.log(`usage  : input=${total.inputTokens} output=${total.outputTokens}`)
-  console.log(`session: ${logFile === undefined ? '(not found)' : join(sessionsRoot, logFile)}`)
-  if (turnFailed) process.exitCode = 1
-} finally {
-  try {
-    await dispose()
-  } finally {
-    await ctx.fiber.dispose()
-  }
+  await server.listen({
+    host: process.env.HOST || '0.0.0.0',
+    port: parseInt(process.env.PORT || '3000', 10),
+  })
+  console.log(`[Main] Server listening on http://${process.env.HOST || '0.0.0.0'}:${process.env.PORT || '3000'}`)
+} catch (err) {
+  server.log.error(err)
+  await server.close()
+  process.exit(1)
 }

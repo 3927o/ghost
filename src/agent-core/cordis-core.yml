@@ -1,12 +1,10 @@
-# Minimal embedded DeepSeek Harness tree: agent loop + skills + durable session log.
-# No Web, CLI, SDK transport, shell, sandbox, timer, title, or upload plugins.
-# main.ts loads .env and sets DSH_HOME and AGENT_SKILLS_DIR before boot().
+# Agent Core: DSH kernel plugins only (no HTTP/DB/external services)
+# Loaded by AgentCore class, not directly by the application.
 
 # ── Model ────────────────────────────────────────────────────────────────────
 - id: llm
   name: '@deepseek-ai/dsh-llm'
 
-# The host validates the environment-defined provider catalog before booting.
 - id: llm-pi-ai
   name: '@deepseek-ai/dsh-llm-pi-ai'
   config:
@@ -15,7 +13,7 @@
 - id: llm-retry
   name: '@deepseek-ai/dsh-llm-retry'
 
-# ── Session log (the trace source of truth) ───────────────────────────────────
+# ── Session log ──────────────────────────────────────────────────────────────
 - id: session
   name: '@deepseek-ai/dsh-session'
 
@@ -34,19 +32,21 @@
   config:
     includeHarnessIdentity: false
     includeRuntimeContext: false
-    personaPrefix: You are an assistant embedded in a host application. Answer concisely.
+    personaPrefix: You are a personal assistant. You can help with information, execute code in a sandbox, and remember important details.
 
 - id: tools
   name: '@deepseek-ai/dsh-tools'
 
 - id: agent
   name: '@deepseek-ai/dsh-agent'
+  config:
+    emitEvents: true
 
-# The host creates agents itself through ctx.agents.create().
 - id: agent-loop
   name: '@deepseek-ai/dsh-agent-loop'
   config:
     agents: []
+    emitEvents: true
 
 # ── Skills ───────────────────────────────────────────────────────────────────
 - id: skill
