@@ -1,0 +1,11 @@
+{
+  "name": "@ghost/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "@ghost/contracts": "*"
+  }
+}

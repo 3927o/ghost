@@ -1,0 +1,11 @@
+{
+  "name": "@ghost/queue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./index.ts",
+  "dependencies": {
+    "bullmq": "^5.81.5",
+    "ioredis": "^5.11.1"
+  }
+}

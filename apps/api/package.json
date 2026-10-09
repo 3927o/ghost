@@ -1,0 +1,15 @@
+{
+  "name": "@ghost/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "fastify": "^5.12.5",
+    "@fastify/cors": "^11.3.0",
+    "pino-pretty": "^13.2.0",
+    "@ghost/contracts": "*",
+    "@ghost/database": "*",
+    "@ghost/config": "*",
+    "@ghost/queue": "*"
+  }
+}

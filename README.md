@@ -1,76 +1,72 @@
-# Ghost Personal Agent
+# Ghost
 
-基于 DeepSeek Harness + Fastify 的个人 AI 助手，支持流式聊天、技能加载和会话持久化。
+个人 Agent 应用，采用 npm monorepo。业务 API 与 Agent Worker 独立运行，使用 Redis/BullMQ 传递任务，SQLite 保存业务记录与 DSH 上下文。
 
 ## 架构
 
-```
-┌─────────────────────────────────────────────┐
-│  Application Layer (Fastify)                │
-│  - HTTP API (POST /api/message)             │
-│  - SSE streaming (/api/message/stream)      │
-│  - Conversation routing                    │
-│  - SessionManager: queue & idle cleanup     │
-│  - Conversation history presentation       │
-└──────────────────┬──────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────┐
-│  Agent Core (Cordis + DSH)                  │
-│  - Create / resume Agent handles           │
-│  - Run turns & stream events               │
-│  - Read durable session events             │
-└─────────────────────────────────────────────┘
+```text
+Web → API / ChatService → 会话、消息、run、outbox（同一 SQLite 事务）
+                              ↓
+                       OutboxDispatcher → Redis / BullMQ
+                                               ↓
+                                         Agent Worker
+                                               ↓
+                                         DSH / 模型 / 工具
+                                               ↓
+                         SQLite：业务回复、run 快照、DSH 上下文
+                              ↓
+                         API / SSE → Web
 ```
 
-## 快速开始
+- **API** 处理会话和消息用例，查询历史与任务快照。`ChatService` 协调仓储与事务，`OutboxDispatcher` 将待投递记录发送至 Redis。
+- **Worker** 接收 Redis 任务，`AgentRunHandler` 校验执行顺序、更新业务状态，`AgentCore` 负责 DSH、模型、工具及上下文恢复。
+- **Web** 提交消息获得 runId，再观察快照。刷新恢复未结束的任务，断线自动重新连接。
+- **database** 只负责连接、事务和各实体仓储；**queue** 只负责 Redis/BullMQ 传输，不依赖数据库和 Agent SDK。
 
-需要 Node.js 24+
+队列使用 `RedisQueue<T>` 和 `QueueWorker<T>`，payload、job 名称、处理器及重试 / 并发配置由应用传入。队列包仅依赖 BullMQ 和 ioredis；会话顺序、outbox 和执行结果提交由 API / Worker 的应用代码负责。
+
+同一会话按提交顺序执行，不同会话可以由多个 Worker 并行处理。API 与 Worker 目前仍须访问同一台机器上的本地 SQLite 文件。
+
+## 启动
+
+要求 Node.js 24+ 和 Redis 7+。仓库提供本地 Redis 的 Docker Compose 配置。
 
 ```bash
 npm install
 cp .env.example .env
+# 配置 Worker 的模型接口和密钥
+docker compose up -d redis
 ```
 
-编辑 `.env` 配置模型接口和密钥。
-
-会话数据库默认是 `data/ghost.sqlite`，启动时自动创建表。可以通过 `SESSION_DB_PATH` 指定其他路径，不需要单独运行数据库服务。
-
-如果已有旧版本的 JSONL 会话，先停止旧后端，再导入：
-
-```bash
-npm run migrate:sessions
-```
-
-默认读取 `$DSH_HOME/sessions`（未配置 `DSH_HOME` 时是 `data/sessions/sessions`）。也可以用 `npm run migrate:sessions -- /path/to/jsonl-root` 指定来源。导入保留原 session ID、时间、完整事件和分支元数据，不删除 JSONL 文件；重复执行会核对已导入的历史前缀，有冲突时拒绝覆盖。
-
-### 启动后端
+一个命令同时启动 API、Web 和 Agent Worker，日志按服务标记，按 Ctrl+C 一起停止：
 
 ```bash
 npm run dev
 ```
 
-服务器默认监听 `http://0.0.0.0:3000`
-
-`npm run dev` 会监听源码和配置变化并自动重启；直接运行后端使用 `npm start`。
-
-### 启动前端（开发模式）
-
-新开一个终端：
+也可以分别启动：
 
 ```bash
-npm run dev:web
+npm run dev:api      # API，默认 http://localhost:3000
+npm run dev:web      # Web，默认 http://localhost:5173
+npm run dev:worker   # Agent Worker
 ```
 
-前端默认运行在 `http://localhost:5173`，API 请求会自动代理到后端。
+打开 http://localhost:5173 使用。Redis 需要提前启动。
 
-### 生产构建
+直接运行使用 `npm run start:api`、`npm run start:worker`。`npm start` 仅启动 API。前端通过 `npm run build:web` 输出到 `dist/web/`，静态服务需将 `/api` 转发至 API。
 
-```bash
-npm run build:web
-```
+| 配置 | 默认值 | 用途 |
+| --- | --- | --- |
+| `DATABASE_PATH` | `data/ghost.sqlite` | API / Worker 共用的本地数据库 |
+| `REDIS_URL` | `redis://127.0.0.1:6379` | Redis 连接 |
+| `REDIS_QUEUE_NAME` | `ghost-agent-runs` | 两个进程使用相同队列名 |
+| `WORKER_LOCK_MS` | `30000` | BullMQ 执行锁时长，自动续期 |
+| `AGENT_SKILLS_DIR` | `apps/agent-worker/skills` | Worker 技能目录 |
 
-前端打包到 `dist/web/`，可以用 Nginx 或其他静态服务器托管。
+API 不需要模型配置。进程默认读取根目录 `.env`，外部环境变量优先；`GHOST_ENV_FILE` 可选择其他文件，空字符串跳过加载。
+
+数据库通过当前 `schema.sql` 初始化，项目暂不提供历史格式导入和跨版本 schema 升级。已有开发数据库若结构不一致，使用新的 `DATABASE_PATH`。
 
 ## 配置接口和模型
 
@@ -111,164 +107,83 @@ GATEWAY_API_KEY=你的密钥
 
 每个模型可以配置 `maxTokens`（默认输出上限）、`contextWindow`（上下文容量）、`input`（如 `["text", "image"]`），以及适配器支持的 `reasoningEfforts`、`compat` 等字段。每个接口也可配置 `headers`、`compat`、`timeoutMs` 等原生 pi-ai 适配器字段。配置在启动时读取，编辑后重新启动。
 
-## 同一 Agent 中切换模型
+## API
 
-宿主可在 Agent 创建后安装模型选择器，保留同一会话历史：
+客户端暂时提供 `userId` 和 `channel`，Web 默认 `owner/main`，尚未接入认证。所有 channel 当前路由到该用户的 `main` 会话。
 
-```ts
-import { installModelSelection, type ModelSelectionRef } from '@deepseek-ai/dsh-agent'
-
-const selection: ModelSelectionRef = {
-  current: { provider, model },
-  assembled: undefined,
-}
-installModelSelection(agent.ctx, selection)
-
-await agent.whenIdle()
-selection.current = { provider: 'gateway', model: 'model-b' }
-// 然后通过 agent.followup(...) 继续对话。
-```
-
-切换目标必须出现在 `MODEL_PROVIDERS` 中。更换接口时同时替换 provider 和 model；选择器在后续步骤生效，正在进行的请求保持原选择。
-
-## API 使用
-
-### 发送消息（同步）
+### 提交消息
 
 ```bash
 curl -X POST http://localhost:3000/api/message \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "owner",
-    "channel": "main",
-    "content": "Hello!"
-  }'
+  -H 'Content-Type: application/json' \
+  -d '{"userId":"owner","channel":"main","content":"你好","requestId":"client-generated-unique-id"}'
 ```
 
-响应：
+返回 HTTP 202：
 
 ```json
-{
-  "conversationId": "main",
-  "sessionId": "ghost-..."
-}
+{"conversationId":"main","runId":"uuid","accepted":true}
 ```
 
-### 发送消息（SSE 流式）
+同一会话、相同 requestId 和内容重复提交返回原 runId；复用 requestId 提交不同内容返回 409。202 表示业务命令与待投递记录已经保存，Redis 暂时不可用时任务会等待补投。
 
-```bash
-curl -X POST http://localhost:3000/api/message/stream \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "owner",
-    "channel": "main",
-    "content": "用 greeting 技能跟我打个招呼，我叫 Richard"
-  }'
-```
-
-返回 Server-Sent Events：
-
-```
-data: {"type":"metadata","conversationId":"..."}
-
-data: {"type":"text","text":"你"}
-
-data: {"type":"text","text":"你好"}
-
-data: {"type":"event","event":{...}}
-
-data: {"type":"done"}
-```
-
-`text` 来自 DSH 的实时 `agent/assistant-stream` 事件，每次携带当前生成尝试的完整可见文本。客户端替换已有文本，避免重复拼接；新步骤或重试会先发送空文本。推理内容和工具参数不会进入 `text` 消息。最终 `assistant/message` 用于校准文本，成功时发送 `done`，生成失败时发送 `error`。
-
-前端通过 `/api/message/stream` 请求；开发模式使用 Vite 代理，生产环境需要将 `/api` 转发到后端。
-
-### 读取主会话历史
+### 历史与执行进度
 
 ```bash
 curl 'http://localhost:3000/api/conversation?userId=owner&channel=main'
+curl 'http://localhost:3000/api/runs/RUN_ID?userId=owner&channel=main'
+curl -N 'http://localhost:3000/api/runs/RUN_ID/events?userId=owner&channel=main'
 ```
 
-返回 `id`、`title`、`messages`、`createdAt` 和 `updatedAt`，前端打开时自动加载。请求中的 `userId` 和 `channel` 由客户端提供，暂未接入身份认证。
+SSE 每条消息都是完整快照：
 
-### 健康检查
+```text
+id: 4
+data: {"type":"snapshot","run":{"id":"uuid","conversationId":"main","assistantMessageId":"assistant-uuid","status":"running","text":"你好","error":null,"revision":4,"createdAt":1,"updatedAt":2}}
+```
+
+状态为 `queued / running / completed / failed`。Worker 合并写入可见文本，API 每 250ms 检查快照变化；终态与最终回复在同一事务中提交。SSE 连接先发当前快照，随后发送更高 revision，终态后关闭。客户端替换完整快照，不依赖逐条日志重放。
+
+`GET /api/health` 表示 API 存活，不表示 Worker 或 Redis 可用。
+
+## 存储与恢复
+
+- `ConversationRepository` 管理业务会话及随机分配的 runtime session ID。
+- `MessageRepository` 管理用户可见消息。
+- `RunRepository` 管理执行状态、顺序约束和结果写入权限，不轮询领取任务。
+- `OutboxRepository` 保存未发送的通知。消息、run 与通知原子提交；API 补投成功后删除通知。使用 runId 作为 Redis jobId，处理发送成功但确认丢失时的重复投递。
+- `sessions / session_events / session_writers` 由 Worker 的 DSH 持久化适配器管理；API 不读取原始 Agent 事件。
+
+API 重启或 SSE 断开不取消任务。Worker 正常停机停止消费并取消当前执行；异常退出后，BullMQ 在锁过期后重新投递。Handler 发现该 run 已进入 running 时将其标记中断，不再调用模型或工具。已完成的 run 重投也不会再次执行。排在后面的消息会继续处理。
+
+同一会话尚有前序任务时，后续 Redis job 延迟后再投递。Redis 连接或任务锁丢失会取消当前执行；业务结果写入还会校验执行 token。外部工具副作用与数据库不具备跨系统事务保证。
+
+Compose 中的 Redis 开启 AOF、同步刷盘和 noeviction。待投递通知在 Redis 确认后删除，因此 Redis 已确认的数据需要持久化；清空 Redis 数据并不等同于正常重启。
+
+BullMQ 行为参考：[stalled jobs](https://docs.bullmq.io/guide/jobs/stalled)、[延迟当前任务](https://docs.bullmq.io/patterns/process-step-jobs)。
+
+## 目录
+
+```text
+apps/
+  api/                     # HTTP、ChatService、OutboxDispatcher
+  agent-worker/            # 任务 Handler、DSH、模型配置
+    skills/                # Worker 自带技能
+    storage/               # DSH SQLite 适配器与 schema.sql
+  web/                     # React
+packages/
+  contracts/               # 业务协议、执行器接口
+  database/                # 连接、仓储、schema.sql
+  queue/                   # Redis / BullMQ producer 和 consumer
+  config/                  # 环境与路径
+```
+
+## 验证
 
 ```bash
-curl http://localhost:3000/api/health
+npm run check
+npm test
+npm run build:web
 ```
 
-## 目录结构
-
-```
-ghost/
-├── main.ts                  # 应用入口（Fastify）
-├── src/
-│   ├── app/                 # 应用层（Fastify）
-│   │   ├── server.ts
-│   │   ├── conversation-routing.ts  # 用户/channel → 逻辑会话
-│   │   ├── session-manager.ts       # 实例管理、排队、空闲释放
-│   │   ├── conversation-history.ts  # 事件 → 前端聊天记录
-│   │   └── routes/
-│   │       └── message.ts
-│   ├── agent-core/          # Agent 核心（Cordis + DSH）
-│   │   ├── index.ts         # AgentCore 类
-│   │   └── cordis-core.yml  # DSH 插件配置
-│   ├── storage/             # 持久化实现
-│   │   ├── sqlite-session-persistence.ts  # DSH 持久化插件与句柄
-│   │   ├── sqlite-session-database.ts     # SQLite 读写与事务
-│   │   └── migrations/                   # 数据库结构升级
-│   └── shared/
-│       └── types.ts
-├── web/                     # 前端（React + Vite）
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Chat.tsx
-│   │   │   └── Sidebar.tsx
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   └── index.html
-├── skills/                  # Agent 技能（markdown）
-├── scripts/
-│   └── migrate-sessions.ts  # 旧 JSONL → SQLite
-└── data/                    # 运行时数据（gitignore）
-    ├── ghost.sqlite         # 当前会话数据库
-    └── sessions/            # 保留的旧 DSH JSONL 日志
-```
-
-## 会话管理
-
-- **默认身份**：`web/src/client-context.ts` 定义 `userId: owner` 和 `channel: main`，浏览器不再生成随机用户和会话 ID。
-- **长期会话**：每个用户当前共用一个 `main` 会话，所有 channel 的消息都路由到该会话。路由策略集中在 `src/app/conversation-routing.ts`，后续可按 channel 分开。
-- **持久化与恢复**：用户与会话决定稳定的 DSH session ID。完整事件日志保存在 SQLite，刷新页面直接读取数据库历史，重启服务或释放 Agent 后从数据库恢复同一会话。
-- **自动清理**：空闲 30 分钟后释放 Agent 实例，持久化历史保留。同一会话的发送、读取和清理按顺序执行。
-- **分层边界**：`SessionManager` 在应用层决定稳定 session ID、缓存 Agent handle、排队和回收，并调用 `conversation-history.ts` 整理展示消息。`AgentCore` 只封装 DSH 创建、恢复、执行和原始事件读取，不依赖用户、channel 或聊天展示类型。入口按 HTTP 请求、会话实例、DSH 运行时的顺序关闭资源。
-- **历史版本**：此前随机用户/会话的 JSONL 日志保留，不自动合并到新的 `owner/main`。
-
-## SQLite 会话存储
-
-`src/storage/sqlite-session-persistence.ts` 实现 DSH 的 `SessionPersistence` 接口，替换原 JSONL 插件。应用层和 Agent 使用相同的创建、恢复与执行接口。
-
-- `sessions` 保存不可变的 DSH header、继承事件数和当前事件数。
-- `session_events` 保存每个完整事件，以 `(session_id, seq)` 为主键，按序追加。模型上下文、工具调用、工具结果和 turn 边界均保留，聊天展示记录由这些事件生成。
-- `session_writers` 保存写句柄的租约。认领与每批追加使用事务，同一个 session 只允许一个活跃写句柄；只读句柄无需认领。租约每 20 秒续期、60 秒过期，关闭时释放，本机已退出进程的租约可以立即接管。失去租约的句柄不能继续写入；应用释放对应的缓存 Agent，后续请求重新恢复会话。
-
-实时事件最多等待 200 毫秒组成一批写入。每批事件及事件数在同一事务中提交，使用 WAL 和 `synchronous=FULL`；输入接收后、回复完成后及资源关闭时都会 flush。数据库保存格式版本，恢复时通过 DSH 校验事件，不静默跳过未知的必需事件。
-
-SQLite 适合当前单机使用；数据库及 WAL 文件应放在本机磁盘。后续更换持久化后端可以继续实现同一个 DSH 接口。当前 Agent 缓存和进程内排队逻辑仍保留。
-
-## 后续计划
-
-- [ ] 长期记忆（memory 插件）
-- [ ] 云端沙箱工具（bash/python 执行）
-- [x] Web 前端与主会话历史恢复
-- [ ] 用户认证
-- [x] SQLite 会话事件持久化与 JSONL 导入
-- [ ] 用户及会话归属信息入库
-- [ ] 定时任务调度器
-
----
-
-🤖 基于 [DeepSeek Harness](https://github.com/deepseek-ai/dsh)
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+`npm test` 包含真实 Redis 容器及 API / Worker 子进程集成测试，需要 Docker 可用。测试自行创建并删除 Redis 容器、临时数据库，模型接口使用本机模拟服务。
