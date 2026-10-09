@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { AgentHandle } from '@deepseek-ai/dsh-agent'
+import { SessionOwnershipLostError } from '@deepseek-ai/dsh-session-persistence'
 import type { AgentCore, RunTurnParams, TurnResult } from '../agent-core/index.ts'
 import type { Conversation } from '../shared/types.ts'
 import { conversationHistory } from './conversation-history.ts'
@@ -63,6 +64,16 @@ export class SessionManager {
     return entry
   }
 
+  private async discardSession(sessionId: string, entry: SessionEntry): Promise<void> {
+    try {
+      await entry.handle.dispose()
+    } catch (error) {
+      console.error(`[SessionManager] Failed to dispose session "${sessionId}" after losing ownership:`, error)
+    } finally {
+      if (this.sessions.get(sessionId) === entry) this.sessions.delete(sessionId)
+    }
+  }
+
   getConversation(userId: string, conversationId: string): Promise<Conversation> {
     const sessionId = this.sessionId(userId, conversationId)
     return this.runExclusive(sessionId, async () => {
@@ -70,12 +81,20 @@ export class SessionManager {
         return conversationHistory(conversationId, Date.now(), [])
       }
 
-      const entry = await this.getOrCreateSession(sessionId)
+      const entry = this.sessions.get(sessionId)
       try {
-        const { createdAt, events } = await this.core.readSession(entry.handle.agent)
+        let stored
+        try {
+          stored = await this.core.readSession(sessionId)
+        } catch (error) {
+          if (!(error instanceof SessionOwnershipLostError) || !entry) throw error
+          await this.discardSession(sessionId, entry)
+          stored = await this.core.readSession(sessionId)
+        }
+        const { createdAt, events } = stored
         return conversationHistory(conversationId, createdAt, events)
       } finally {
-        entry.lastActivity = Date.now()
+        if (entry) entry.lastActivity = Date.now()
       }
     })
   }
@@ -88,6 +107,9 @@ export class SessionManager {
       try {
         const result = await this.core.runTurn({ ...turn, agent: entry.handle.agent })
         return { ...result, conversationId }
+      } catch (error) {
+        if (error instanceof SessionOwnershipLostError) await this.discardSession(sessionId, entry)
+        throw error
       } finally {
         entry.lastActivity = Date.now()
       }

@@ -1,4 +1,4 @@
-# Agent Core: DSH kernel plugins only (no HTTP/DB/external services)
+# Agent Core: DSH plugins and the session-persistence provider (no HTTP services)
 # Loaded by AgentCore class, not directly by the application.
 
 # ── Model ────────────────────────────────────────────────────────────────────
@@ -21,10 +21,9 @@
   name: '@deepseek-ai/dsh-session-projection'
 
 - id: session-persistence
-  name: '@deepseek-ai/dsh-session-persistence-jsonl'
+  name: '../storage/sqlite-session-persistence.ts'
   config:
-    root: !!js dshHomePath('sessions')
-    compression: none
+    path: !!js process.env.SESSION_DB_PATH
 
 # ── Agent kernel ─────────────────────────────────────────────────────────────
 - id: system-prompt

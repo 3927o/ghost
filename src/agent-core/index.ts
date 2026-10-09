@@ -29,6 +29,7 @@ export interface AgentCoreConfig {
   skillsDir: string
   modelProvider: string
   modelName: string
+  sessionDbPath: string
 }
 
 export class AgentCore {
@@ -46,6 +47,7 @@ export class AgentCore {
     // Set environment variables before boot
     process.env.DSH_HOME = this.config.dshHome
     process.env.AGENT_SKILLS_DIR = this.config.skillsDir
+    process.env.SESSION_DB_PATH = this.config.sessionDbPath
 
     const coreYaml = join(import.meta.dirname, 'cordis-core.yml')
     if (!existsSync(coreYaml)) {
@@ -86,10 +88,14 @@ export class AgentCore {
   }
 
   /** Read durable events; the application decides how to present them. */
-  async readSession(agent: Agent): Promise<{ createdAt: number; events: readonly SessionEvent[] }> {
-    await agent.whenIdle()
-    await this.sessions.flush(agent.session)
-    const handle = await this.persistence.open(agent.id, 'read')
+  async readSession(sessionId: string): Promise<{ createdAt: number; events: readonly SessionEvent[] }> {
+    const id = SessionId(sessionId)
+    const agent = this.agents.get(id)
+    if (agent) {
+      await agent.whenIdle()
+      await this.sessions.flush(agent.session)
+    }
+    const handle = await this.persistence.open(id, 'read')
     try {
       const { events } = await handle.read()
       return { createdAt: handle.header.createdAt, events }

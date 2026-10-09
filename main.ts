@@ -39,6 +39,7 @@ const agentCore = new AgentCore({
   skillsDir: join(rootDir, 'skills'),
   modelProvider: provider,
   modelName: model,
+  sessionDbPath: process.env.SESSION_DB_PATH || join(rootDir, 'data', 'ghost.sqlite'),
 })
 
 await agentCore.init()

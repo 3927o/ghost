@@ -7,7 +7,8 @@
     "dev": "node --watch --watch-path=main.ts --watch-path=model-config.ts --watch-path=src --watch-path=skills --watch-path=.env main.ts",
     "dev:web": "vite",
     "build:web": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "migrate:sessions": "node scripts/migrate-sessions.ts"
   },
   "engines": {
     "node": ">=24"

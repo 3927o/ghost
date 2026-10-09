@@ -34,6 +34,16 @@ cp .env.example .env
 
 编辑 `.env` 配置模型接口和密钥。
 
+会话数据库默认是 `data/ghost.sqlite`，启动时自动创建表。可以通过 `SESSION_DB_PATH` 指定其他路径，不需要单独运行数据库服务。
+
+如果已有旧版本的 JSONL 会话，先停止旧后端，再导入：
+
+```bash
+npm run migrate:sessions
+```
+
+默认读取 `$DSH_HOME/sessions`（未配置 `DSH_HOME` 时是 `data/sessions/sessions`）。也可以用 `npm run migrate:sessions -- /path/to/jsonl-root` 指定来源。导入保留原 session ID、时间、完整事件和分支元数据，不删除 JSONL 文件；重复执行会核对已导入的历史前缀，有冲突时拒绝覆盖。
+
 ### 启动后端
 
 ```bash
@@ -204,6 +214,10 @@ ghost/
 │   ├── agent-core/          # Agent 核心（Cordis + DSH）
 │   │   ├── index.ts         # AgentCore 类
 │   │   └── cordis-core.yml  # DSH 插件配置
+│   ├── storage/             # 持久化实现
+│   │   ├── sqlite-session-persistence.ts  # DSH 持久化插件与句柄
+│   │   ├── sqlite-session-database.ts     # SQLite 读写与事务
+│   │   └── migrations/                   # 数据库结构升级
 │   └── shared/
 │       └── types.ts
 ├── web/                     # 前端（React + Vite）
@@ -215,18 +229,33 @@ ghost/
 │   │   └── main.tsx
 │   └── index.html
 ├── skills/                  # Agent 技能（markdown）
+├── scripts/
+│   └── migrate-sessions.ts  # 旧 JSONL → SQLite
 └── data/                    # 运行时数据（gitignore）
-    └── sessions/            # DSH JSONL 日志
+    ├── ghost.sqlite         # 当前会话数据库
+    └── sessions/            # 保留的旧 DSH JSONL 日志
 ```
 
 ## 会话管理
 
 - **默认身份**：`web/src/client-context.ts` 定义 `userId: owner` 和 `channel: main`，浏览器不再生成随机用户和会话 ID。
 - **长期会话**：每个用户当前共用一个 `main` 会话，所有 channel 的消息都路由到该会话。路由策略集中在 `src/app/conversation-routing.ts`，后续可按 channel 分开。
-- **持久化与恢复**：用户与会话决定稳定的 DSH session ID。日志继续保存为 JSONL，刷新页面会读取历史，重启服务或释放 Agent 后会恢复同一会话。
+- **持久化与恢复**：用户与会话决定稳定的 DSH session ID。完整事件日志保存在 SQLite，刷新页面直接读取数据库历史，重启服务或释放 Agent 后从数据库恢复同一会话。
 - **自动清理**：空闲 30 分钟后释放 Agent 实例，持久化历史保留。同一会话的发送、读取和清理按顺序执行。
 - **分层边界**：`SessionManager` 在应用层决定稳定 session ID、缓存 Agent handle、排队和回收，并调用 `conversation-history.ts` 整理展示消息。`AgentCore` 只封装 DSH 创建、恢复、执行和原始事件读取，不依赖用户、channel 或聊天展示类型。入口按 HTTP 请求、会话实例、DSH 运行时的顺序关闭资源。
 - **历史版本**：此前随机用户/会话的 JSONL 日志保留，不自动合并到新的 `owner/main`。
+
+## SQLite 会话存储
+
+`src/storage/sqlite-session-persistence.ts` 实现 DSH 的 `SessionPersistence` 接口，替换原 JSONL 插件。应用层和 Agent 使用相同的创建、恢复与执行接口。
+
+- `sessions` 保存不可变的 DSH header、继承事件数和当前事件数。
+- `session_events` 保存每个完整事件，以 `(session_id, seq)` 为主键，按序追加。模型上下文、工具调用、工具结果和 turn 边界均保留，聊天展示记录由这些事件生成。
+- `session_writers` 保存写句柄的租约。认领与每批追加使用事务，同一个 session 只允许一个活跃写句柄；只读句柄无需认领。租约每 20 秒续期、60 秒过期，关闭时释放，本机已退出进程的租约可以立即接管。失去租约的句柄不能继续写入；应用释放对应的缓存 Agent，后续请求重新恢复会话。
+
+实时事件最多等待 200 毫秒组成一批写入。每批事件及事件数在同一事务中提交，使用 WAL 和 `synchronous=FULL`；输入接收后、回复完成后及资源关闭时都会 flush。数据库保存格式版本，恢复时通过 DSH 校验事件，不静默跳过未知的必需事件。
+
+SQLite 适合当前单机使用；数据库及 WAL 文件应放在本机磁盘。后续更换持久化后端可以继续实现同一个 DSH 接口。当前 Agent 缓存和进程内排队逻辑仍保留。
 
 ## 后续计划
 
@@ -234,7 +263,8 @@ ghost/
 - [ ] 云端沙箱工具（bash/python 执行）
 - [x] Web 前端与主会话历史恢复
 - [ ] 用户认证
-- [ ] 数据库持久化（users, conversations）
+- [x] SQLite 会话事件持久化与 JSONL 导入
+- [ ] 用户及会话归属信息入库
 - [ ] 定时任务调度器
 
 ---
