@@ -13,7 +13,7 @@ export interface AgentCoreConfig {
   skillsDir: string
   modelProvider: string
   modelName: string
-  sessionDbPath: string
+  sessionDatabase: { type: 'sqlite'; path: string } | { type: 'postgres' | 'mysql'; url: string; poolSize?: number }
 }
 
 export class AgentCore implements AgentExecutor {
@@ -28,7 +28,8 @@ export class AgentCore implements AgentExecutor {
   async init(): Promise<void> {
     process.env.DSH_HOME = this.config.dshHome
     process.env.AGENT_SKILLS_DIR = this.config.skillsDir
-    process.env.SESSION_DB_PATH = this.config.sessionDbPath
+    process.env.AGENT_DATABASE_CONFIG = JSON.stringify(this.config.sessionDatabase)
+    process.env.AGENT_DATABASE_PROVIDER = this.config.sessionDatabase.type === 'postgres' ? 'pg' : this.config.sessionDatabase.type
     this.ctx = await boot('ghost-worker', join(import.meta.dirname, 'cordis-core.yml'))
     const agents = this.ctx.get('agents')
     const sessions = this.ctx.get('sessions')

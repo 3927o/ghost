@@ -1,0 +1,14 @@
+{
+  "name": "@ghost/database-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./index.ts",
+  "dependencies": {
+    "typeorm": "1.1.2",
+    "reflect-metadata": "^0.2.2",
+    "pg": "^8.16.3",
+    "mysql2": "^3.15.3",
+    "better-sqlite3": "^12.11.1"
+  }
+}

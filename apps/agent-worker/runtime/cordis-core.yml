@@ -20,10 +20,23 @@
 - id: session-projection
   name: '@deepseek-ai/dsh-session-projection'
 
+- id: database-pg
+  name: '../plugins/database-provider-pg/index.ts'
+  disabled: !!js process.env.AGENT_DATABASE_PROVIDER !== 'pg'
+  config: !!js JSON.parse(process.env.AGENT_DATABASE_CONFIG)
+
+- id: database-mysql
+  name: '../plugins/database-provider-mysql/index.ts'
+  disabled: !!js process.env.AGENT_DATABASE_PROVIDER !== 'mysql'
+  config: !!js JSON.parse(process.env.AGENT_DATABASE_CONFIG)
+
+- id: database-sqlite
+  name: '../plugins/database-provider-sqlite/index.ts'
+  disabled: !!js process.env.AGENT_DATABASE_PROVIDER !== 'sqlite'
+  config: !!js JSON.parse(process.env.AGENT_DATABASE_CONFIG)
+
 - id: session-persistence
-  name: '../storage/sqlite-session-persistence.ts'
-  config:
-    path: !!js process.env.SESSION_DB_PATH
+  name: '../plugins/session-persistence-database/index.ts'
 
 # ── Agent kernel ─────────────────────────────────────────────────────────────
 - id: system-prompt

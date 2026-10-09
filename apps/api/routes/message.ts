@@ -44,7 +44,7 @@ export async function messageRoutes(server: FastifyInstance, { chat }: { chat: C
   }, async (request, reply) => {
     const { userId, conversationId } = resolveConversation(request.body)
     try {
-      return reply.code(202).send(chat.submit(userId, conversationId, request.body.content, request.body.requestId))
+      return reply.code(202).send(await chat.submit(userId, conversationId, request.body.content, request.body.requestId))
     } catch (error) {
       if (error instanceof SubmissionConflictError) return reply.code(409).send({ error: error.message })
       throw error
@@ -53,7 +53,7 @@ export async function messageRoutes(server: FastifyInstance, { chat }: { chat: C
 
   server.get<RunRequest>('/api/runs/:runId', { schema: runSchema }, async (request, reply) => {
     const { userId, conversationId } = resolveConversation(request.query)
-    const run = chat.getRun(userId, conversationId, request.params.runId)
+    const run = await chat.getRun(userId, conversationId, request.params.runId)
     reply.header('Cache-Control', 'no-store')
     return run ?? reply.code(404).send({ error: 'Run not found' })
   })
@@ -61,7 +61,7 @@ export async function messageRoutes(server: FastifyInstance, { chat }: { chat: C
   server.get<RunRequest>('/api/runs/:runId/events', { schema: runSchema }, async (request, reply) => {
     const { userId, conversationId } = resolveConversation(request.query)
     const read = () => chat.getRun(userId, conversationId, request.params.runId)
-    const initial = read()
+    const initial = await read()
     if (!initial) return reply.code(404).send({ error: 'Run not found' })
 
     reply.hijack()
@@ -73,9 +73,12 @@ export async function messageRoutes(server: FastifyInstance, { chat }: { chat: C
       Connection: 'keep-alive', 'X-Accel-Buffering': 'no',
     })
     let revision = -1
+    let reading = false
+    let closed = false
     let timer: NodeJS.Timeout | undefined
     let heartbeat: NodeJS.Timeout | undefined
     const close = () => {
+      closed = true
       clearInterval(timer)
       clearInterval(heartbeat)
       streams.delete(close)
@@ -95,15 +98,18 @@ export async function messageRoutes(server: FastifyInstance, { chat }: { chat: C
     }
     streams.add(close)
     reply.raw.on('close', close)
-    timer = setInterval(() => {
+    timer = setInterval(async () => {
+      if (reading || closed) return
+      reading = true
       try {
-        const run = read()
+        const run = await read()
+        if (closed) return
         if (run) send(run)
         else close()
       } catch (error) {
         server.log.error(error, 'Failed to observe run')
         close()
-      }
+      } finally { reading = false }
     }, 250)
     heartbeat = setInterval(() => {
       if (!reply.raw.write(': heartbeat\n\n')) close()

@@ -6,7 +6,7 @@ export interface RedisQueueConfig { url: string; queueName: string }
 export interface QueueJob<T> { id: string; name: string; data: T }
 export interface JobHandler<T> {
   execute(job: QueueJob<T>, signal: AbortSignal): Promise<'done' | 'defer'>
-  deliveryFailed(job: QueueJob<T>, error: Error): void
+  deliveryFailed(job: QueueJob<T>, error: Error): void | Promise<void>
 }
 export type DeliveryOptions = Pick<JobsOptions, 'attempts' | 'backoff' | 'removeOnComplete' | 'removeOnFail'>
 export interface ConsumerOptions {
@@ -79,10 +79,12 @@ export class QueueWorker<T> {
   private readonly worker: Worker<T>
   private readonly active = new Map<string, AbortController>()
   private readonly stopping = new AbortController()
+  private readonly failures = new Set<Promise<void>>()
 
   constructor(config: RedisQueueConfig, handler: JobHandler<T>, options: ConsumerOptions = {}) {
     const { lockDuration = 30_000, concurrency = 1, deferDelayMs = 250, maxStalledCount = 1 } = options
     if (!Number.isFinite(lockDuration) || lockDuration < 1000) throw new Error('lockDuration must be at least 1000ms')
+    if (!Number.isInteger(concurrency) || concurrency < 1) throw new Error('concurrency must be a positive integer')
     this.worker = new Worker<T>(config.queueName, async (job, token) => {
       const controller = new AbortController()
       this.active.set(job.id!, controller)
@@ -109,7 +111,9 @@ export class QueueWorker<T> {
     })
     this.worker.on('failed', (job, error) => {
       if (job && (job.attemptsMade >= (job.opts.attempts ?? 1) || error.name === 'UnrecoverableError')) {
-        try { handler.deliveryFailed({ id: job.id!, name: job.name, data: job.data }, error) } catch (failure) { console.error('[QueueWorker]', failure) }
+        const pending = Promise.resolve().then(() => handler.deliveryFailed({ id: job.id!, name: job.name, data: job.data }, error)).catch(failure => { console.error('[QueueWorker]', failure) })
+        this.failures.add(pending)
+        void pending.finally(() => this.failures.delete(pending))
       }
     })
   }
@@ -120,5 +124,6 @@ export class QueueWorker<T> {
   async stop(): Promise<void> {
     this.stopping.abort(new Error('Worker shutting down'))
     await this.worker.close()
+    await Promise.all([...this.failures])
   }
 }

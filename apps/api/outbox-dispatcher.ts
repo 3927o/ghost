@@ -1,10 +1,10 @@
 /** Retry committed notifications; Redis job IDs deduplicate an ambiguous acknowledgement. */
-import type { OutboxRepository } from '@ghost/database'
+interface OutboxStore { pending(): Promise<string[]>; acknowledge(id: string): Promise<void> }
 /** Application port; the composition root adapts the generic transport to run notifications. */
 interface RunPublisher { publish(runId: string): Promise<void> }
 
 export class OutboxDispatcher {
-  private readonly outbox: OutboxRepository
+  private readonly outbox: OutboxStore
   private readonly publisher: RunPublisher
   private readonly reportError: (error: unknown) => void
   private timer?: NodeJS.Timeout
@@ -12,7 +12,7 @@ export class OutboxDispatcher {
   private stopping = false
   private failed = false
 
-  constructor(outbox: OutboxRepository, publisher: RunPublisher, reportError = console.error) {
+  constructor(outbox: OutboxStore, publisher: RunPublisher, reportError = console.error) {
     this.outbox = outbox
     this.publisher = publisher
     this.reportError = reportError
@@ -30,10 +30,10 @@ export class OutboxDispatcher {
 
   private async deliver(): Promise<void> {
     try {
-      for (const runId of this.outbox.pending()) {
+      for (const runId of await this.outbox.pending()) {
         if (this.stopping) break
         await this.publisher.publish(runId)
-        this.outbox.acknowledge(runId)
+        await this.outbox.acknowledge(runId)
       }
       this.failed = false
     } catch (error) {

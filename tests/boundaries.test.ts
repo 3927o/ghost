@@ -3,6 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const root = resolve(import.meta.dirname, '..')
 const packages = new Map<string, string>()
@@ -23,8 +24,8 @@ test('API, public contracts and queue imports cannot cross into DSH or Worker', 
     for (const match of source.matchAll(/(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
       const name = match[1]
       assert.ok(!name.startsWith('@deepseek-ai/'), `${file} imports runtime package ${name}`)
-      if (name.startsWith('.') || packages.has(name)) {
-        const target = name.startsWith('.') ? resolve(dirname(file), name) : join(packages.get(name)!, 'index.ts')
+      if (name.startsWith('.') || [...packages.keys()].some(pkg => name === pkg || name.startsWith(pkg + '/'))) {
+        const target = name.startsWith('.') ? resolve(dirname(file), name) : fileURLToPath(import.meta.resolve(name))
         assert.ok(!target.includes('/apps/agent-worker/'), `${file} imports Worker implementation ${target}`)
         visit(target)
       }

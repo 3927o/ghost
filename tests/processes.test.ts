@@ -9,7 +9,8 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 import { DatabaseSync } from 'node:sqlite'
-import { Database, OutboxRepository, RunRepository } from '@ghost/database'
+import { createDatabase } from '@ghost/database-client'
+import { businessModels, outboxStore, RunRepository } from '@ghost/database'
 import { ChatService } from '../apps/api/chat-service.ts'
 import { RedisQueue, QueueWorker } from '@ghost/queue'
 import { createServer as createNetServer } from 'node:net'
@@ -29,7 +30,8 @@ async function until<T>(read: () => T | undefined | false | Promise<T | undefine
 test('independent processes survive API restart, serialize runs, recover crashes, and recover Redis publication', { timeout: 60_000 }, async t => {
   const directory = mkdtempSync(join(tmpdir(), 'ghost-processes-'))
   const path = join(directory, 'ghost.sqlite')
-  const db = new Database(path)
+  const config = { type: 'sqlite' as const, path }
+  const db = await createDatabase(config, businessModels(config))
   const store = new ChatService(db)
   const reserve = createNetServer()
   reserve.listen(0, '127.0.0.1')
@@ -78,7 +80,7 @@ test('independent processes survive API restart, serialize runs, recover crashes
   await once(model, 'listening')
   const modelPort = (model.address() as { port: number }).port
   const env = {
-    ...process.env, GHOST_ENV_FILE: '', DATABASE_PATH: path, HOST: '127.0.0.1', PORT: '0',
+    ...process.env, GHOST_ENV_FILE: '', DATABASE_TYPE: 'sqlite', DATABASE_PATH: path, AGENT_DATABASE_TYPE: 'sqlite', AGENT_DATABASE_PATH: path, HOST: '127.0.0.1', PORT: '0',
     REDIS_URL: `redis://127.0.0.1:${redisPort}`, WORKER_LOCK_MS: '1500', REDIS_QUEUE_NAME: 'ghost-test',
     DSH_HOME: join(directory, 'dsh'), MODEL_PROVIDER: 'test', MODEL_NAME: 'test-model', TEST_MODEL_KEY: 'local-test',
     MODEL_PROVIDERS: JSON.stringify({ test: {
@@ -106,7 +108,7 @@ test('independent processes survive API restart, serialize runs, recover crashes
     for (const response of held.values()) response.destroy()
     model.closeAllConnections()
     await new Promise<void>(resolve => model.close(() => resolve()))
-    db.close()
+    await db.close()
     rmSync(directory, { recursive: true, force: true })
   })
   const startApi = async () => {
@@ -133,8 +135,8 @@ test('independent processes survive API restart, serialize runs, recover crashes
     assert.equal(response.status, 202)
     return (await response.json() as { runId: string }).runId
   }
-  const completed = (id: string) => until(() => {
-    const run = store.getRun('owner', 'main', id)!
+  const completed = (id: string) => until(async () => {
+    const run = (await store.getRun('owner', 'main', id))!
     assert.notEqual(run.status, 'failed', JSON.stringify(run) + [...logs.values()].join('\n'))
     return run.status === 'completed' && run
   }, `run ${id} complete`)
@@ -142,16 +144,16 @@ test('independent processes survive API restart, serialize runs, recover crashes
   let api = await startApi()
   const first = await submit(api.url, 'first')
   const second = await submit(api.url, 'second')
-  assert.equal(store.getRun('owner', 'main', first)!.status, 'queued')
+  assert.equal((await store.getRun('owner', 'main', first))!.status, 'queued')
   assert.equal(modelCalls, 0)
-  assert.deepEqual(new OutboxRepository(db).pending(), [first, second])
+  assert.deepEqual((await outboxStore(db).pending()), [first, second])
   // API restart while Redis is offline must retain accepted commands for later delivery.
   await stop(api.child)
   assert.equal(api.child.exitCode, 0, logs.get(api.child)!)
   api = await startApi()
   execFileSync('docker', ['start', redisContainer], { stdio: 'ignore' })
   let worker = await startWorker()
-  await until(() => new OutboxRepository(db).pending().length === 0, 'outbox delivery after Redis recovers')
+  await until(async () => (await outboxStore(db).pending()).length === 0, 'outbox delivery after Redis recovers')
   await until(() => held.has('first'), 'first model request')
   assert.match(JSON.stringify(modelRequests[0].messages), /greeting/, 'Worker loads skills from its own directory')
   const worker2 = await startWorker()
@@ -165,7 +167,7 @@ test('independent processes survive API restart, serialize runs, recover crashes
   assert.equal(api.child.exitCode, 0, logs.get(api.child)!)
   await reader.cancel().catch(() => {})
   reader.releaseLock()
-  assert.equal(store.getRun('owner', 'main', first)!.status, 'running')
+  assert.equal((await store.getRun('owner', 'main', first))!.status, 'running')
   finish('first')
   assert.equal((await completed(first)).text, 'reply:first done')
   await completed(second)
@@ -185,14 +187,14 @@ test('independent processes survive API restart, serialize runs, recover crashes
   await until(() => held.has('crash'), 'crash model request')
   await stop(worker, 'SIGKILL')
   worker = await startWorker()
-  await until(() => store.getRun('owner', 'main', crash)!.status === 'failed', 'abandoned run recovery')
+  await until(async () => (await store.getRun('owner', 'main', crash))!.status === 'failed', 'abandoned run recovery')
   await completed(afterCrash)
   assert.equal(modelRequests.filter(request => request.input === 'crash').length, 1, 'Interrupted tool/model work is never replayed')
   const shutdown = await submit(api.url, 'shutdown')
   await until(() => held.has('shutdown'), 'shutdown model request')
   await stop(worker)
   assert.equal(worker.exitCode, 0, logs.get(worker)!)
-  assert.equal(store.getRun('owner', 'main', shutdown)!.status, 'failed')
+  assert.equal((await store.getRun('owner', 'main', shutdown))!.status, 'failed')
 
   // Losing the DSH writer must abort an in-flight model, even with no new stream events.
   worker = await startWorker()
@@ -201,9 +203,9 @@ test('independent processes survive API restart, serialize runs, recover crashes
   const tamper = new DatabaseSync(path)
   try {
     tamper.prepare('UPDATE session_writers SET token = ? WHERE session_id = ?')
-      .run('replacement-owner', new RunRepository(db).getExecution(lost)!.runtime_session_id)
+      .run('replacement-owner', (await db.read(manager => new RunRepository(manager).getExecution(lost)))!.runtime_session_id)
   } finally { tamper.close() }
-  await until(() => store.getRun('owner', 'main', lost)!.status === 'failed', 'writer lease loss cancellation', 25_000)
+  await until(async () => (await store.getRun('owner', 'main', lost))!.status === 'failed', 'writer lease loss cancellation', 25_000)
   await until(() => held.get('lease-loss')!.destroyed, 'model HTTP aborted after lease loss')
   await stop(worker)
 
@@ -212,10 +214,10 @@ test('independent processes survive API restart, serialize runs, recover crashes
   const redisLoss = await submit(api.url, 'redis-loss')
   await until(() => held.has('redis-loss'), 'Redis-loss model request')
   execFileSync('docker', ['stop', '--time', '1', redisContainer], { stdio: 'ignore' })
-  await until(() => store.getRun('owner', 'main', redisLoss)!.status === 'failed', 'Redis loss cancels active Agent')
+  await until(async () => (await store.getRun('owner', 'main', redisLoss))!.status === 'failed', 'Redis loss cancels active Agent')
   await until(() => held.get('redis-loss')!.destroyed, 'model HTTP aborted after Redis loss')
   const afterRedis = await submit(api.url, 'after-redis')
-  assert.ok(new OutboxRepository(db).pending().includes(afterRedis))
+  assert.ok((await outboxStore(db).pending()).includes(afterRedis))
   await stop(worker, 'SIGKILL')
   execFileSync('docker', ['start', redisContainer], { stdio: 'ignore' })
   worker = await startWorker()
@@ -224,7 +226,7 @@ test('independent processes survive API restart, serialize runs, recover crashes
   assert.match(JSON.stringify(modelRequests.find(request => request.input === 'after-redis')!.messages), /reply:first done/)
   await stop(worker)
 
-  const history = store.getConversation('owner', 'main')
+  const history = await store.getConversation('owner', 'main')
   assert.equal(history.messages.filter(message => message.role === 'user').length, 8)
   assert.ok(history.messages.some(message => message.error))
 

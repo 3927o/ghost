@@ -22,6 +22,7 @@
     "@ghost/contracts": "*",
     "@ghost/database": "*",
     "@ghost/config": "*",
-    "@ghost/queue": "*"
+    "@ghost/queue": "*",
+    "@ghost/database-client": "*"
   }
 }
