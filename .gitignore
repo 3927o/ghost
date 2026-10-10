@@ -1,5 +1,8 @@
 data/
 .env
+.deploy.env
+.deploy.env.*
+!.deploy.env.example
 node_modules/
 *.log
 .dsh-home/

@@ -1,0 +1,18 @@
+[Unit]
+Description=Application process (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=application
+WorkingDirectory=/srv/application
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /srv/application/apps/%i/main.ts
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

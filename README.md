@@ -62,6 +62,8 @@ npm run dev:worker   # Agent Worker
 
 直接运行使用 `npm run start:api`、`npm run start:worker`。`npm start` 仅启动 API。前端通过 `npm run build:web` 输出到 `dist/web/`，静态服务需将 `/api` 转发至 API。
 
+从本机或 CI 使用 `npm run deploy` 发布当前提交，或用 `npm run deploy -- --ref <提交、标签或分支>` 指定版本。代码部署到固定目录，保留服务器上的 `.env` 和 `data`。目标信息通过被 Git 忽略的 `.deploy.env` 或环境变量提供，详见[部署文档](docs/deployment.md)。
+
 | 配置 | 默认值 | 用途 |
 | --- | --- | --- |
 | `DATABASE_TYPE` | `sqlite` | `postgres`、`mysql` 或 `sqlite`；示例环境配置为 `postgres` |
