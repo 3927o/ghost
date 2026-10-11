@@ -11,6 +11,7 @@ import { ChatService, SubmissionConflictError } from '../apps/api/chat-service.t
 import { OutboxDispatcher } from '../apps/api/outbox-dispatcher.ts'
 import { AgentRunHandler } from '../apps/agent-worker/run-handler.ts'
 import { createServer } from '../apps/api/server.ts'
+import { startText, deltaText, finishText } from './fixtures/agent-events.ts'
 
 async function fixture(t: { after: (fn: () => void | Promise<void>) => void }) {
   const directory = mkdtempSync(join(tmpdir(), 'ghost-store-'))
@@ -38,11 +39,12 @@ test('same-conversation execution is ordered; terminal redelivery cannot repeat 
   let release!: () => void
   const gate = new Promise<void>(resolve => { release = resolve })
   let calls = 0
-  const handler = new AgentRunHandler(db, { async execute(run, _signal, onText) {
+  const handler = new AgentRunHandler(db, { async execute(run, _signal, onEvent) {
     calls++
-    onText('partial')
+    startText(onEvent)
+    deltaText(onEvent, 'partial')
     if (run.input === 'first') await gate
-    return `answer:${run.input}`
+    finishText(onEvent, `answer:${run.input}`)
   } })
   const first = (await chat.submit('owner', 'main', 'first', 'first')).runId
   const second = (await chat.submit('owner', 'main', 'second', 'second')).runId

@@ -20,6 +20,8 @@ export interface ChatMessage {
   error?: boolean
   runId?: string
   streaming?: boolean
+  parts?: RunPart[]
+  failure?: string
 }
 
 export interface Conversation {
@@ -41,6 +43,8 @@ export interface RunSnapshot {
   revision: number
   createdAt: number
   updatedAt: number
+  parts: RunPart[]
+  lastEventSeq: number
 }
 
 export interface MessageResponse {
@@ -49,11 +53,11 @@ export interface MessageResponse {
   accepted: boolean
 }
 
-/** Each update is a complete durable snapshot, so intermediate revisions may be coalesced. */
-export interface RunStreamEvent {
-  type: 'snapshot'
-  run: RunSnapshot
-}
+import type { RunPart, RunEvent } from './run-events.ts'
+export * from './run-events.ts'
+
+/** Bootstrap from a snapshot, then deliver ordered, replayable application events. */
+export type RunStreamEvent = { type: 'snapshot'; run: RunSnapshot } | RunEvent
 
 export function isTerminalRun(status: RunStatus): boolean {
   return status === 'completed' || status === 'failed'
@@ -63,7 +67,3 @@ export function isTerminalRun(status: RunStatus): boolean {
 export interface RunJob { runId: string }
 
 export interface AgentExecution { id: string; sessionId: string; input: string }
-
-export interface AgentExecutor {
-  execute(run: AgentExecution, signal: AbortSignal, onText: (text: string) => void): Promise<string>
-}

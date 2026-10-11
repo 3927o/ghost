@@ -1,14 +1,20 @@
 import { Table, TableForeignKey, TableIndex, type EntitySchema, type QueryRunner } from 'typeorm'
 
-/** Versioned initial schema. No destructive synchronization or legacy conversion. */
-export async function initializeSchema(runner: QueryRunner, group: string, entities: EntitySchema[]): Promise<void> {
+/** Versioned schema creation and explicit additive migrations; no destructive synchronization. */
+export async function initializeSchema(runner: QueryRunner, group: string, entities: EntitySchema[], migrations: ((runner: QueryRunner) => Promise<void>)[] = []): Promise<void> {
+  const target = 1 + migrations.length
   await runner.createTable(new Table({ name: 'ghost_schema_versions', columns: [
     { name: 'name', type: 'varchar', length: '32', isPrimary: true },
     { name: 'version', type: 'integer' },
   ] }), true)
   const marker = await runner.manager.createQueryBuilder().select('version').from('ghost_schema_versions', 'v').where('name = :name', { name: group }).getRawOne()
   if (marker) {
-    if (Number(marker.version) !== 1) throw new Error(`Unsupported ${group} schema version: ${marker.version}`)
+    const version = Number(marker.version)
+    if (!Number.isInteger(version) || version < 1 || version > target) throw new Error(`Unsupported ${group} schema version: ${marker.version}`)
+    for (let next = version + 1; next <= target; next++) {
+      await migrations[next - 2](runner)
+      await runner.manager.createQueryBuilder().update('ghost_schema_versions').set({ version: next }).where('name = :name', { name: group }).execute()
+    }
     return
   }
   const metadata = entities.map(entity => runner.connection.getMetadata(entity))
@@ -38,5 +44,5 @@ export async function initializeSchema(runner: QueryRunner, group: string, entit
       if (!table.indices.some(existing => existing.name === value.name)) await runner.createIndex(table, value)
     }
   }
-  await runner.manager.createQueryBuilder().insert().into('ghost_schema_versions').values({ name: group, version: 1 }).execute()
+  await runner.manager.createQueryBuilder().insert().into('ghost_schema_versions').values({ name: group, version: target }).execute()
 }

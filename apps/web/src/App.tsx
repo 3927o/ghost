@@ -1,6 +1,6 @@
 /** Submit business commands, then observe durable runs independently of the browser request. */
 import { useState, useRef, useEffect } from 'react'
-import { isTerminalRun, type MessageResponse, type RunSnapshot } from '@ghost/contracts'
+import { isTerminalRun, reduceRunEvent, type MessageResponse, type RunStreamEvent, type RunView } from '@ghost/contracts'
 import { Chat } from './components/Chat'
 import { Sidebar } from './components/Sidebar'
 import { clientContext } from './client-context'
@@ -45,18 +45,27 @@ function App() {
     if (!activeRuns) return
     const controller = new AbortController()
     const { signal } = controller
-    const revisions = new Map<string, number>()
-    const update = (run: RunSnapshot) => {
-      if (signal.aborted || run.revision <= (revisions.get(run.id) ?? -1)) return
-      revisions.set(run.id, run.revision)
+    const cursors = new Map<string, number>()
+    const views = new Map<string, RunView>()
+    const update = (id: string, event: RunStreamEvent) => {
+      if (signal.aborted) return
+      const sequence = event.type === 'snapshot' ? event.run.lastEventSeq : event.sequence
+      if (event.type === 'event' && event.runId !== id) throw new Error('Unexpected run event')
+      if (sequence <= (cursors.get(id) ?? -1)) return
+      if (event.type === 'event' && sequence !== (cursors.get(id) ?? 0) + 1) throw new Error('Run event sequence gap')
+      const view = event.type === 'snapshot' ? event.run : reduceRunEvent(views.get(id)!, event.event)
+      views.set(id, view)
+      cursors.set(id, sequence)
+      const updatedAt = event.type === 'snapshot' ? event.run.updatedAt : event.time
       setNotice('')
       setConversation(previous => previous && ({
         ...previous,
-        updatedAt: Math.max(previous.updatedAt, run.updatedAt),
-        activeRunIds: isTerminalRun(run.status) ? previous.activeRunIds.filter(id => id !== run.id) : previous.activeRunIds,
-        messages: previous.messages.map(message => message.id === run.assistantMessageId ? {
-          ...message, content: [run.text, run.error].filter(Boolean).join('\n\n'),
-          streaming: !isTerminalRun(run.status), error: run.status === 'failed',
+        updatedAt: Math.max(previous.updatedAt, updatedAt),
+        activeRunIds: isTerminalRun(view.status) ? previous.activeRunIds.filter(runId => runId !== id) : previous.activeRunIds,
+        messages: previous.messages.map(message => message.id === `assistant-${id}` ? {
+          ...message, content: [view.text, view.error].filter(Boolean).join('\n\n'), parts: view.parts,
+          failure: view.error ?? undefined,
+          streaming: !isTerminalRun(view.status), error: view.status === 'failed',
         } : message),
       }))
     }
@@ -64,9 +73,10 @@ function App() {
       let backoff = 500
       while (!signal.aborted) {
         try {
-          const response = await fetch(`/api/runs/${id}/events?${query}`, { signal, cache: 'no-store' })
+          const after = cursors.get(id)
+          const response = await fetch(`/api/runs/${id}/events?${query}${after === undefined ? '' : `&after=${after}`}`, { signal, cache: 'no-store' })
           if (!response.ok || !response.body) throw new Error('Run observation unavailable')
-          await readMessageStream(response.body, event => update(event.run))
+          await readMessageStream(response.body, event => { update(id, event); backoff = 500 })
           return
         } catch {
           if (signal.aborted) return

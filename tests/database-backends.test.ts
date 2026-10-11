@@ -1,5 +1,6 @@
 /** The same repositories and Cordis consumers run against all three real drivers. */
 import { test } from 'node:test'
+import { startText, deltaText, finishText } from './fixtures/agent-events.ts'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -81,7 +82,7 @@ for (const backend of ['sqlite', 'postgres', 'mysql'] as const) {
     const ordered = (await chat.getConversation('ordered', 'main')).activeRunIds
     assert.equal(ordered.length, accepted.length)
     const executed: string[] = []
-    const handler = new AgentRunHandler(business, { async execute(run) { executed.push(run.id); return run.input } })
+    const handler = new AgentRunHandler(business, { async execute(run) { executed.push(run.id) } })
     const signal = new AbortController().signal
     const outcomes = await Promise.all([...ordered].reverse().map(id => handler.execute(id, signal)))
     assert.ok(outcomes.includes('defer'))
@@ -94,13 +95,14 @@ for (const backend of ['sqlite', 'postgres', 'mysql'] as const) {
     const gate = new Promise<void>(resolve => { release = resolve })
     const gateDeadline = setTimeout(release, 10_000)
     t.after(() => { clearTimeout(gateDeadline); release() })
-    const parallel = new AgentRunHandler(second, { async execute(run, _signal, onText) {
+    const parallel = new AgentRunHandler(second, { async execute(run, _signal, onEvent) {
       peak = Math.max(peak, ++concurrent)
-      onText('partial')
+      startText(onEvent)
+      deltaText(onEvent, 'partial')
       if (concurrent === 3) release()
       await gate
       concurrent--
-      return `final:${run.input}`
+      finishText(onEvent, `final:${run.input}`)
     } })
     const tasks = await Promise.all([0, 1, 2].map(i => chat.submit(`parallel-${i}`, 'main', `text-${i}`, 'one')))
     await Promise.all(tasks.map(task => parallel.execute(task.runId, signal)))

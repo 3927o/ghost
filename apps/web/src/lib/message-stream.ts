@@ -1,5 +1,5 @@
 /** Read complete SSE records across UTF-8 / network chunk boundaries. */
-import { isTerminalRun, type RunStreamEvent } from '@ghost/contracts'
+import { isTerminalStreamEvent, type RunStreamEvent } from '@ghost/contracts'
 
 export async function readMessageStream(
   body: ReadableStream<Uint8Array>,
@@ -21,7 +21,7 @@ export async function readMessageStream(
           const message: RunStreamEvent = JSON.parse(dataLines.join('\n'))
           dataLines = []
           onMessage(message)
-          if (isTerminalRun(message.run.status)) return
+          if (isTerminalStreamEvent(message)) return
         } else if (line.startsWith('data:')) {
           dataLines.push(line.slice(5).replace(/^ /, ''))
         }

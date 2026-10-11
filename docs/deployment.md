@@ -45,6 +45,8 @@ npm run deploy -- --ref abc1234       # 指定提交，也支持标签或本地�
 
 首次部署前创建应用账户、应用目录、`.env` 和 `data/`，让应用账户可以读取 `.env`、写入 `data/`；建议配置文件权限为 `0600`。部署账户需要能更新代码、安装依赖，并控制对应服务。
 
+当前业务数据库使用 schema v2，API/Worker 首次启动会自动从 v1 增加事件记录和展示状态，保留现有数据。升级前应备份数据库。只支持 schema v1 的旧代码无法直接打开升级后的业务数据库；代码回退时需要使用支持 v2 的版本，或同时恢复对应数据库备份。
+
 调整 [systemd 模板](../scripts/deploy/application@.service.example) 的账户、路径和 Node.js 路径，安装为 `application@.service`，执行 `daemon-reload` 并启用 `application@api.service` 和 `application@agent-worker.service`。非 root 部署通过 `sudo -n systemctl` 操作，需要预先配置相应权限。
 
 静态服务指向 `<应用目录>/dist/web`，将 `/api/*` 反向代理到 API 监听端口，并支持 SSE。服务与反向代理的配置只在首次准备或配置变化时调整。

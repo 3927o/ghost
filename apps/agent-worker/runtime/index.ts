@@ -1,12 +1,13 @@
-/** DSH lifecycle and event-to-text projection, owned exclusively by the Worker. */
+/** Worker-owned DSH lifecycle; forward complete runtime events to the application handler. */
 import { join } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import type { AgentHandle, AgentRegistry } from '@deepseek-ai/dsh-agent'
 import type { SessionPersistence } from '@deepseek-ai/dsh-session-persistence'
 import { boot } from '@deepseek-ai/dsh-app-boot'
-import { BlockAssembler, createUserMessage } from '@deepseek-ai/dsh-llm'
-import { SessionId, type SessionEvent, type SessionStore } from '@deepseek-ai/dsh-session'
-import type { AgentExecutor, AgentExecution } from '@ghost/contracts'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import { SessionId, snapshotSessionEvent, type SessionEvent, type SessionStore } from '@deepseek-ai/dsh-session'
+import type { AgentExecution } from '@ghost/contracts'
+import type { AgentExecutor, AgentRuntimeEvent } from './events.ts'
 
 export interface AgentCoreConfig {
   dshHome: string
@@ -40,7 +41,7 @@ export class AgentCore implements AgentExecutor {
     this.persistence = persistence
   }
 
-  async execute(run: AgentExecution, signal: AbortSignal, onText: (text: string) => void): Promise<string> {
+  async execute(run: AgentExecution, signal: AbortSignal, onEvent: (event: AgentRuntimeEvent) => void): Promise<void> {
     signal.throwIfAborted()
     const id = SessionId(run.sessionId)
     const agentOptions = { provider: this.config.modelProvider, model: this.config.modelName }
@@ -51,31 +52,15 @@ export class AgentCore implements AgentExecutor {
     const agent = handle.agent
     const cancel = () => agent.cancel({ kind: 'hook', reason: 'Worker execution cancelled' })
     signal.addEventListener('abort', cancel, { once: true })
-    let text = ''
-    let assembler = new BlockAssembler()
     let turnEnd: Extract<SessionEvent, { type: 'turn/end' }> | undefined
-    const publish = (value: string) => { text = value; onText(value) }
     const removeEvent = this.ctx.on('session/event', (session, event) => {
       if (session !== agent.session) return
       if (event.type === 'turn/end') turnEnd = event
-      if (event.type === 'assistant/message') {
-        publish(event.data.message.content.filter(block => block.type === 'text').map(block => block.text).join(''))
-      }
+      onEvent({ type: 'session', event: snapshotSessionEvent(event) })
     })
     const removeStream = this.ctx.on('agent/assistant-stream', ({ agent: source, frame }) => {
       if (source !== agent) return
-      if (frame.type === 'start') {
-        assembler = new BlockAssembler()
-        publish('')
-      } else if (frame.type === 'chunk') {
-        const { chunk } = frame
-        if (chunk.type !== 'text-delta'
-          && !(chunk.type === 'block-start' && chunk.blockType === 'text')
-          && !(chunk.type === 'block-end' && chunk.block.type === 'text')) return
-        assembler.push(chunk)
-        const value = assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
-        if (value !== text) publish(value)
-      }
+      onEvent({ type: 'assistant-stream', frame: structuredClone(frame) })
     })
     try {
       signal.throwIfAborted()
@@ -89,7 +74,6 @@ export class AgentCore implements AgentExecutor {
       if (turnEnd?.data.reason.kind !== 'completed') {
         throw new Error(`Agent turn did not complete: ${turnEnd?.data.reason.kind ?? 'missing turn/end'}`)
       }
-      return text
     } finally {
       signal.removeEventListener('abort', cancel)
       removeEvent()

@@ -96,6 +96,21 @@
   padding-left: 16px;
 }
 
+.run-timeline, .assistant-part { display: flex; flex-direction: column; gap: 10px; }
+.assistant-part:empty { display: none; }
+.assistant-part.abandoned { opacity: 0.6; }
+.tool-card, .reasoning-block { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-secondary); }
+.tool-card summary, .reasoning-block summary { padding: 10px 14px; cursor: pointer; color: var(--text-secondary); }
+.tool-name { font-family: monospace; color: var(--text-primary); margin-right: 12px; overflow-wrap: anywhere; }
+.tool-status { font-size: 12px; }
+.tool-card.running .tool-status, .tool-card.pending .tool-status { color: var(--accent); }
+.tool-card.failed, .tool-card.interrupted { border-color: var(--error); }
+.tool-detail, .reasoning-block > div, .tool-error { padding: 0 14px 12px; }
+.detail-label, .part-notice { font-size: 12px; color: var(--text-secondary); }
+.tool-detail pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 6px 0 0; max-height: 320px; overflow-y: auto; }
+.reasoning-block > div { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.5; }
+.tool-error { color: var(--error); white-space: pre-wrap; }
+
 .input-area {
   border-top: 1px solid var(--border);
   padding: 20px;

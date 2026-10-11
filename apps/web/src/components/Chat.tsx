@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Conversation } from '../types'
 import './Chat.css'
+import { RunTimeline } from './RunTimeline'
 
 interface ChatProps {
   conversation?: Conversation
@@ -59,10 +60,13 @@ export function Chat({ conversation, onSendMessage, disabled = false }: ChatProp
               {msg.role === 'user' ? '👤' : '🤖'}
             </div>
             <div className="message-content">
-              <div className={`message-text ${msg.error ? 'error' : ''}`}>
+              {msg.role === 'assistant' && !!msg.parts?.length ? <>
+                <RunTimeline parts={msg.parts} />
+                {msg.failure && <div className="message-text error">{msg.failure}</div>}
+              </> : <div className={`message-text ${msg.error ? 'error' : ''}`}>
                 {msg.content || (msg.streaming ? '思考中...' : '')}
                 {msg.streaming && msg.content && <span className="cursor">▊</span>}
-              </div>
+              </div>}
               <div className="message-time">
                 {new Date(msg.timestamp).toLocaleTimeString('zh-CN', {
                   hour: '2-digit',

@@ -19,8 +19,8 @@ Web → API / ChatService → 会话、消息、run、outbox（同一数据库�
 ```
 
 - **API** 处理会话和消息用例，查询历史与任务快照。`ChatService` 协调仓储与事务，`OutboxDispatcher` 将待投递记录发送至 Redis。
-- **Worker** 接收 Redis 任务，`AgentRunHandler` 校验执行顺序、更新业务状态，`AgentCore` 负责 DSH、模型、工具及上下文恢复。
-- **Web** 提交消息获得 runId，再观察快照。刷新恢复未结束的任务，断线自动重新连接。
+- **Worker** 接收 Redis 任务，`AgentCore` 负责 DSH、模型、工具及上下文恢复，将完整实时流帧和会话事件交给 `AgentRunHandler`。Handler 校验执行顺序、筛选和映射公开事件，并提交事件记录及业务状态。
+- **Web** 提交消息获得 runId，通过 SSE 接收初始快照和后续事件，展示多轮回答、思考块及工具参数、状态和结果。刷新从快照恢复，断线从最后处理的事件序号继续。
 - **database-client** 负责 ORM 驱动、连接、事务和关闭；**database** 定义实体、仓储和版本化表结构，两者都不依赖 Cordis 或 Agent SDK。
 - **database-provider** 定义 `ctx.database` 契约，具体 Provider 管理 Agent 插件共享的连接；**session-persistence-database** 使用仓储实现 DSH 持久化。
 - **queue** 只负责 Redis/BullMQ 传输，不依赖数据库和 Agent SDK。
@@ -174,14 +174,25 @@ curl 'http://localhost:3000/api/runs/RUN_ID?userId=owner&channel=main'
 curl -N 'http://localhost:3000/api/runs/RUN_ID/events?userId=owner&channel=main'
 ```
 
-SSE 每条消息都是完整快照：
+首次 SSE 连接发送当前状态快照，包括 `parts`（按执行顺序排列的 assistant 消息及工具卡片）和 `lastEventSeq`，随后发送增量业务事件：
 
 ```text
-id: 4
-data: {"type":"snapshot","run":{"id":"uuid","conversationId":"main","assistantMessageId":"assistant-uuid","status":"running","text":"你好","error":null,"revision":4,"createdAt":1,"updatedAt":2}}
+id: 0
+data: {"type":"snapshot","run":{"id":"uuid","conversationId":"main","assistantMessageId":"assistant-uuid","status":"queued","text":"","error":null,"revision":0,"parts":[],"lastEventSeq":0,"createdAt":1,"updatedAt":2}}
+
+id: 1
+data: {"type":"event","runId":"uuid","sequence":1,"time":3,"event":{"type":"run.started"}}
+
+id: 2
+data: {"type":"event","runId":"uuid","sequence":2,"time":4,"event":{"type":"assistant.started","messageId":"attempt-1","step":1}}
+
+id: 3
+data: {"type":"event","runId":"uuid","sequence":3,"time":5,"event":{"type":"assistant.delta","messageId":"attempt-1","index":0,"kind":"text","text":"你好"}}
 ```
 
-状态为 `queued / running / completed / failed`。Worker 合并写入可见文本，API 每 250ms 检查快照变化；终态与最终回复在同一事务中提交。SSE 连接先发当前快照，随后发送更高 revision，终态后关闭。客户端替换完整快照，不依赖逐条日志重放。
+状态为 `queued / running / completed / failed`。公开事件包含 `run.started`、`step.started / step.finished`、`assistant.started / assistant.delta / assistant.block / assistant.finished`、`tool.delta / tool.called / tool.result` 和 `run.completed / run.failed`。Handler 按 100ms 批量保存事件，同一文本块的相邻增量可合并；事件序号、展示状态、文本摘要和业务消息在同一事务提交。内部 prompt、请求头和 provider replay state 保留在 DSH 存储，不进入公开协议。
+
+API 每 250ms 查询新的公开事件，轮询只读取执行状态、事件序号和新增事件，不反复读取大文本快照。SSE 发送时遵守背压，终态后关闭。重连使用 `Last-Event-ID` 或 `?after=<sequence>`，服务端只重放此序号之后的事件；客户端按序号去重。没有游标的新连接总是从最新快照恢复，已完成 run 的历史展示也保留全部消息及工具卡片。`revision` 表示数据库状态版本，`sequence / lastEventSeq` 表示公开事件顺序。
 
 `GET /api/health` 表示 API 存活，不表示 Worker 或 Redis 可用。
 
@@ -189,9 +200,11 @@ data: {"type":"snapshot","run":{"id":"uuid","conversationId":"main","assistantMe
 
 - `ConversationRepository` 管理业务会话及随机分配的 runtime session ID。
 - `MessageRepository` 管理用户可见消息。
-- `RunRepository` 管理执行状态、顺序约束和结果写入权限，不轮询领取任务。
+- `RunRepository` 管理执行状态、顺序约束、结果写入权限及 `run_events` 的有序事件记录，不轮询领取任务。
 - `OutboxRepository` 保存未发送的通知。消息、run 与通知原子提交；API 补投成功后删除通知。使用 runId 作为 Redis jobId，处理发送成功但确认丢失时的重复投递。
 - `sessions / session_events / session_writers` 的实体和仓储位于 `database/session`；Worker 的 `session-persistence-database` 负责 DSH 事件校验、缓冲、写入租约与恢复，API 不读取原始 Agent 事件。
+
+业务数据库 schema v2 新增 run 的展示状态、事件序号和 `run_events` 表。启动时自动从 v1 做非破坏性升级，保留已有会话、消息和任务；旧任务没有事件记录时仍可通过文本快照展示。DSH Session 的 schema 保持 v1。
 
 API 重启或 SSE 断开不取消任务。Worker 正常停机停止消费并取消当前执行；异常退出后，BullMQ 在锁过期后重新投递。Handler 发现该 run 已进入 running 时将其标记中断，不再调用模型或工具。已完成的 run 重投也不会再次执行。排在后面的消息会继续处理。
 

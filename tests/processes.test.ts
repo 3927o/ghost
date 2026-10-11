@@ -15,6 +15,7 @@ import { ChatService } from '../apps/api/chat-service.ts'
 import { RedisQueue, QueueWorker } from '@ghost/queue'
 import { createServer as createNetServer } from 'node:net'
 import { readMessageStream } from '../apps/web/src/lib/message-stream.ts'
+import { emptyRunView, reduceRunEvent, type RunStreamEvent } from '@ghost/contracts'
 
 const root = resolve(import.meta.dirname, '..')
 async function until<T>(read: () => T | undefined | false | Promise<T | undefined | false>, description: string, timeout = 15_000): Promise<T> {
@@ -72,6 +73,17 @@ test('independent processes survive API restart, serialize runs, recover crashes
     modelCalls++
     modelRequests.push({ input, messages: payload.messages })
     res.writeHead(200, { 'Content-Type': 'text/event-stream' })
+    if (input === 'tool-flow' && !payload.messages.some((message: { role: string; tool_call_id?: string }) => message.role === 'tool' && message.tool_call_id === 'call-skill')) {
+      send(res, '先加载技能。')
+      res.write(`data: ${JSON.stringify({ id: 'mock', object: 'chat.completion.chunk', created: 1, model: 'test-model',
+        choices: [{ index: 0, delta: { tool_calls: [{ index: 0, id: 'call-skill', type: 'function', function: { name: 'skill', arguments: '{"name":"greeting"}' } }] }, finish_reason: null }],
+      })}\n\n`)
+      res.write(`data: ${JSON.stringify({ id: 'mock', object: 'chat.completion.chunk', created: 1, model: 'test-model',
+        choices: [{ index: 0, delta: {}, finish_reason: 'tool_calls' }],
+      })}\n\ndata: [DONE]\n\n`)
+      res.end()
+      return
+    }
     send(res, `reply:${input}`)
     if (holds.has(input)) held.set(input, res)
     else { send(res, ' done'); send(res, '', true) }
@@ -172,10 +184,39 @@ test('independent processes survive API restart, serialize runs, recover crashes
   assert.equal((await completed(first)).text, 'reply:first done')
   await completed(second)
   api = await startApi()
-  const terminal = await fetch(`${api.url}/api/runs/${first}/events?userId=owner&channel=main`, { headers: { 'Last-Event-ID': '1' } })
-  const replay: string[] = []
-  await readMessageStream(terminal.body!, event => replay.push(event.run.text))
-  assert.deepEqual(replay, ['reply:first done'])
+  const terminal = await fetch(`${api.url}/api/runs/${first}/events?userId=owner&channel=main`, { headers: { 'Last-Event-ID': '0' } })
+  const replay: RunStreamEvent[] = []
+  let replayed = emptyRunView()
+  await readMessageStream(terminal.body!, event => {
+    replay.push(event)
+    replayed = event.type === 'snapshot' ? event.run : reduceRunEvent(replayed, event.event)
+  })
+  assert.equal(replayed.text, 'reply:first done')
+  assert.equal(replayed.status, 'completed')
+  assert.ok(replay.some(event => event.type === 'event' && event.event.type === 'assistant.delta'))
+  const toolRunId = await submit(api.url, 'tool-flow')
+  const toolRun = await completed(toolRunId)
+  assert.equal(toolRun.text, '先加载技能。\n\nreply:tool-flow done')
+  assert.equal(toolRun.parts.filter(part => part.type === 'assistant').length, 2)
+  const toolPart = toolRun.parts.find(part => part.type === 'tool')!
+  assert.equal(toolPart.type, 'tool')
+  if (toolPart.type === 'tool') {
+    assert.equal(toolPart.name, 'skill')
+    assert.equal(toolPart.status, 'completed')
+    assert.match(toolPart.result, /Greeting/)
+  }
+  const toolReplay = await fetch(`${api.url}/api/runs/${toolRunId}/events?userId=owner&channel=main&after=0`)
+  let restored = emptyRunView()
+  const toolEventTypes: string[] = []
+  await readMessageStream(toolReplay.body!, event => {
+    assert.equal(event.type, 'event')
+    if (event.type === 'event') { toolEventTypes.push(event.event.type); restored = reduceRunEvent(restored, event.event) }
+  })
+  assert.ok(toolEventTypes.includes('tool.delta'))
+  assert.ok(toolEventTypes.includes('tool.called'))
+  assert.ok(toolEventTypes.includes('tool.result'))
+  assert.deepEqual(restored.parts, toolRun.parts)
+  assert.equal(restored.text, toolRun.text)
   const secondRequest = modelRequests.find(request => request.input === 'second')!
   assert.match(JSON.stringify(secondRequest.messages), /reply:first done/, 'DSH session context survives handle disposal')
   await stop(worker2)
@@ -227,7 +268,7 @@ test('independent processes survive API restart, serialize runs, recover crashes
   await stop(worker)
 
   const history = await store.getConversation('owner', 'main')
-  assert.equal(history.messages.filter(message => message.role === 'user').length, 8)
+  assert.equal(history.messages.filter(message => message.role === 'user').length, 9)
   assert.ok(history.messages.some(message => message.error))
 
   // Reuse the same transport with a different payload, job name and handler, without business storage.

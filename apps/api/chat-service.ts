@@ -37,4 +37,7 @@ export class ChatService {
   getRun(userId: string, logicalId: string, runId: string) {
     return this.db.read(manager => new RunRepository(manager).getSnapshot(userId, logicalId, runId))
   }
+  getRunEvents(userId: string, logicalId: string, runId: string, after: number) {
+    return this.db.read(manager => new RunRepository(manager).observe(userId, logicalId, runId, after))
+  }
 }
