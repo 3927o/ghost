@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Ghost — 设计系统 0.2</title>
+  <link rel="stylesheet" href="tokens.css?v=0.2.1">
+  <link rel="stylesheet" href="components.css?v=0.2.1">
+  <link rel="stylesheet" href="showcase.css?v=0.2.1">
+  <script src="showcase.js" defer></script>
+</head>
+<body class="ghost-ui">
+  <svg class="ds-symbols" aria-hidden="true"><defs>
+    <symbol id="ghost-mark" viewBox="0 0 64 64"><path d="M13.5 39C10.2 29.4 12.2 18.3 20.7 12.7C28.6 7.5 39.4 9 45.2 16.1C49.3 21.2 49.9 27.5 48.5 34.1C47.5 38.8 49.8 42 54.8 42.9C58.4 43.5 57.9 46.5 54.6 48.1C49.2 50.8 45.1 47.2 41.9 49C37.3 52.5 34.5 47.3 30.9 49.4C25.8 52.4 23.6 47 20.1 47.7C14.4 49 10.5 44.5 13.5 39Z" fill="white" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><ellipse cx="26" cy="28" rx="2.7" ry="3.5" fill="currentColor"/><ellipse cx="38" cy="26.8" rx="2.7" ry="3.5" fill="currentColor"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 1-8 8H5l-3 3V11a9 9 0 0 1 18 0Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v.1"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
+  </defs></svg>
+  <a class="ds-skip" href="#main">跳到主要内容</a>
+  <aside class="ds-sidebar">
+    <a href="#overview" class="ds-brand" aria-label="Ghost 设计系统首页"><svg class="g-mark" aria-hidden="true"><use href="#ghost-mark"/></svg><span>ghost<span class="ds-brand-dot">.</span></span></a>
+    <p class="g-label g-muted ds-sidebar-subtitle">DESIGN SYSTEM / 0.2</p>
+    <nav class="ds-nav" aria-label="设计系统章节">
+      <a href="#overview" aria-current="location"><span>00</span>设计语言</a>
+      <a href="#foundations"><span>01</span>基础规范</a>
+      <a href="#components"><span>02</span>组件与状态</a>
+      <a href="#composition"><span>03</span>内容组合</a>
+      <a href="#handoff"><span>04</span>使用与交付</a>
+    </nav>
+    <div class="ds-sidebar-foot"><span class="ds-version-dot"></span><p class="g-label g-muted">Light · 中文优先<br>一套安静的视觉语言</p></div>
+  </aside>
+
+  <main id="main" class="ds-main">
+    <section id="overview" class="ds-overview ds-section" aria-labelledby="overview-title">
+      <div class="ds-topline"><span class="ds-overline">GHOST / VISUAL LANGUAGE</span><span class="g-label g-muted">版本 0.2 <span class="ds-topline-divider">/</span> 2026.10</span></div>
+      <div class="ds-intro-grid">
+        <div class="ds-intro-copy"><p class="g-label g-muted">00 — 设计语言</p><h1 id="overview-title" class="ds-display">文字在前，<br>界面轻一点。</h1><p class="g-text g-secondary">从原稿的阅读感出发：<br>舒展的行距、自然的分组、轻量的操作。<br>把这些分寸，变成组件的默认值。</p><a href="#components" class="ds-text-link">查看组件规范 <span aria-hidden="true">↗</span></a><p class="g-label g-muted ds-baseline-note">右侧使用原稿内容作为排版样本。<br>由公共组件直接组成，没有独立的内容样式。</p></div>
+        <div class="ds-specimen-wrap">
+          <p class="ds-overline ds-specimen-label" id="specimenWidth">排版基准 / 最大 390px</p>
+          <div class="ds-specimen" aria-label="使用公共组件的原稿排版样本">
+            <div class="g-brand ds-specimen-top"><svg class="g-mark" aria-hidden="true"><use href="#ghost-mark"/></svg><span class="g-wordmark">ghost</span><span class="g-label g-muted">我在。</span></div>
+            <div class="g-thread">
+              <section class="g-message">
+                <div class="g-byline"><svg class="g-mark" aria-hidden="true"><use href="#ghost-mark"/></svg><span>Ghost</span><span>14:28</span></div>
+                <p class="g-text">下午好，林木。<br>邮件已经整理好了，保留了三件最重要的事。</p>
+                <article class="g-content" data-surface="plain">
+                  <header class="g-content-head"><p class="g-label g-muted">给周华的草稿</p><h2 class="g-title g-secondary">Q2 迭代架构权衡及工期共识</h2></header>
+                  <div class="g-prose">
+                    <p class="g-detail g-secondary">内核模块迁移：主链路改造在 5 月 15 日前完成，不占用运营排期。</p>
+                    <p class="g-detail g-secondary">容灾与降级：补充 5% 灰度观测机制，评审时聚焦关键风险。</p>
+                    <p class="g-detail g-secondary">需要确认：请周华在下午会前确认附件第 3 节的安全指标。</p>
+                  </div>
+                  <p class="g-label g-muted">Q2 架构评审附件.pdf</p>
+                  <div class="g-actions g-actions--text"><button class="g-btn g-btn--primary" type="button" data-sample-action>确认发送</button><button class="g-btn" type="button" data-sample-action>修改</button><button class="g-icon-button" type="button" data-sample-action aria-label="排版样本的更多操作"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-more"/></svg></button></div>
+                </article>
+              </section>
+              <section class="g-message g-message--user"><p class="g-detail g-secondary">另外帮我留意下，<br>刚买的咖啡豆到了没。</p></section>
+            </div>
+          </div>
+          <p class="g-label g-muted ds-specimen-caption">正文 14 / 28 · 详情 13 / 26 · 无容器边界</p>
+        </div>
+      </div>
+      <div class="ds-principles"><div><span class="ds-index">01</span><h2 class="g-title">以阅读建立层级</h2><p class="g-label g-muted">常规字重、舒展行距。标题靠位置与留白成立。</p></div><div><span class="ds-index">02</span><h2 class="g-title">默认没有容器</h2><p class="g-label g-muted">用间距组织内容，浅底与边框仅在需要独立分组时出现。</p></div><div><span class="ds-index">03</span><h2 class="g-title">操作保持轻量</h2><p class="g-label g-muted">默认文字按钮。44px 点击区域不等于 44px 色块。</p></div></div>
+    </section>
+
+    <section id="foundations" class="ds-section" aria-labelledby="foundations-title">
+      <header class="ds-section-head"><div><p class="ds-overline">01 / FOUNDATIONS</p><h2 id="foundations-title" class="g-page-title">基础规范</h2></div><p class="g-label g-muted">少量、明确、有职责的基础变量。</p></header>
+      <div class="ds-subhead"><h3 class="g-title">颜色</h3><span class="g-label g-muted">按语义使用，而非挑选相近的灰色</span></div>
+      <div id="colorTokens" class="ds-swatches" aria-label="颜色变量，点击复制"></div>
+      <p class="ds-note g-label g-muted">常规内容使用前三档文字色；禁用色只用于不可用状态。状态同时通过文字或图标表达。</p>
+
+      <div class="ds-subhead ds-block-start"><h3 class="g-title">文字</h3><span class="g-label g-muted">系统字体 · Regular 400 / Medium 500</span></div>
+      <div class="ds-type-table">
+        <div class="ds-type-row"><div><span class="g-label">页面标题</span><code data-type-spec></code></div><p class="g-page-title">给重要的内容，一点空间。</p></div>
+        <div class="ds-type-row"><div><span class="g-label">内容标题</span><code data-type-spec></code></div><p class="g-title">每一段内容，都有清楚的起点。</p></div>
+        <div class="ds-type-row"><div><span class="g-label">对话正文</span><code data-type-spec></code></div><p class="g-text">文字自然流动，信息轻轻展开。Ghost keeps things clear.</p></div>
+        <div class="ds-type-row"><div><span class="g-label">内容详情</span><code data-type-spec></code></div><p class="g-detail g-secondary">补充说明、长段落与结构化详情，维持同一种阅读节奏。</p></div>
+        <div class="ds-type-row"><div><span class="g-label">标签与辅助说明</span><code data-type-spec></code></div><p class="g-label g-muted">更新时间 14:28 · 文字来源 · 简短说明</p></div>
+      </div>
+      <p class="ds-note g-label g-muted">正文左对齐，不两端拉伸；长文本按容器宽度自然换行。触屏输入控件使用 16px，保证编辑时的可读性。展示页大标题属于文档排版，不进入产品字号体系。</p>
+
+      <div class="ds-foundation-grid ds-block-start">
+        <div><div class="ds-subhead"><h3 class="g-title">间距</h3><span class="g-label g-muted">4px 基准</span></div><div id="spacingScale" class="ds-spacing"></div><p class="g-label g-muted ds-note">段落 8 · 内容模块 12 · 独立表面内距 16<br>页面侧距 24 · 消息之间 40 · 上方按 4 倍展示</p></div>
+        <div><div class="ds-subhead"><h3 class="g-title">圆角与边界</h3></div><div class="ds-radius-row"><div><span class="ds-radius-shape" style="--demo-radius:var(--ghost-radius-control)"></span><span class="g-label">控件 8</span></div><div><span class="ds-radius-shape" style="--demo-radius:var(--ghost-radius-content)"></span><span class="g-label">容器 12</span></div><div><span class="ds-radius-shape" style="--demo-radius:var(--ghost-radius-sheet)"></span><span class="g-label">浮层 20</span></div></div><p class="g-label g-muted ds-note">普通内容无阴影；细线组织分组；阴影用于浮层。</p></div>
+      </div>
+      <div class="ds-icon-spec ds-block-start"><div><h3 class="g-title">图标与动效</h3><p class="g-label g-muted">16 / 20px · 1.5px 描边 · 44px 点击区域</p></div><div class="ds-icon-line" aria-label="图标样例"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-chat"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-clock"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-copy"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-more"/></svg></div><p class="g-label g-muted">反馈 120ms · 浮层 180ms<br>跟随系统的减少动态效果设置</p></div>
+    </section>
+
+    <section id="components" class="ds-section" aria-labelledby="components-title">
+      <header class="ds-section-head"><div><p class="ds-overline">02 / COMPONENTS</p><h2 id="components-title" class="g-page-title">组件与状态</h2></div><p class="g-label g-muted">同一组样式，覆盖每一个交互时刻。</p></header>
+      <div class="ds-subhead"><h3 class="g-title">按钮</h3><span class="g-label g-muted">文字 12 / 20 · 点击区域 ≥44 · 图文间距 8</span></div>
+      <p class="g-detail g-secondary ds-component-note">内容中的操作默认使用文字按钮；重点操作加深文字。实心按钮仅用于独立弹层或表单的最终确认，每组至多一个。</p>
+      <div id="buttonStates" class="ds-button-matrix" aria-label="三种按钮的六种状态"></div>
+      <div class="ds-live-row"><p class="g-label g-muted">真实交互：点击按钮体验加载与完成反馈。</p><button id="liveAction" type="button" class="g-btn g-btn--primary">试一次</button><span id="actionStatus" class="g-label g-muted" role="status" aria-live="polite">准备好了</span></div>
+
+      <div class="ds-subhead ds-block-start"><h3 class="g-title">输入</h3><span class="g-label g-muted">常态单线 · 聚焦明确 · 反馈就近</span></div>
+      <div class="ds-input-grid">
+        <div class="g-field"><label for="defaultInput">默认</label><input id="defaultInput" class="g-input" placeholder="写下一个想法" aria-describedby="defaultHint"><p id="defaultHint" class="g-hint">点击或用 Tab 键体验聚焦状态。</p></div>
+        <div class="g-field"><label for="filledInput">已填写</label><input id="filledInput" class="g-input" value="让内容自然呼吸" aria-describedby="filledHint"><p id="filledHint" class="g-hint">标签保留，输入内容保持主要文字色。</p></div>
+        <div class="g-field"><label for="invalidInput">校验反馈</label><input id="invalidInput" class="g-input" aria-invalid="true" aria-describedby="invalidHint" placeholder="试着输入文字"><p id="invalidHint" class="g-hint g-feedback" role="status"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-info"/></svg><span>请填写内容后继续。</span></p></div>
+        <div class="g-field"><label for="disabledInput">不可用</label><input id="disabledInput" class="g-input" disabled value="暂不可编辑" aria-describedby="disabledHint"><p id="disabledHint" class="g-hint">禁用态保留结构，并降低视觉权重。</p></div>
+      </div>
+
+      <div class="ds-component-grid ds-block-start">
+        <div><div class="ds-subhead"><h3 class="g-title">导航与列表</h3></div><div class="g-tabs" role="tablist" aria-label="导航样例"><button class="g-tab" role="tab" id="tab-text" aria-selected="true" aria-controls="panel-text" type="button">文字</button><button class="g-tab" role="tab" id="tab-detail" aria-selected="false" aria-controls="panel-detail" tabindex="-1" type="button">详情</button><button class="g-tab" role="tab" id="tab-note" aria-selected="false" aria-controls="panel-note" tabindex="-1" type="button">说明</button></div>
+          <div id="panel-text" role="tabpanel" aria-labelledby="tab-text" class="ds-tab-panel"><div class="g-list"><div class="g-list-row"><svg class="g-icon" aria-hidden="true"><use href="#i-chat"/></svg><div class="g-list-copy"><p class="g-text">一段简短的内容</p><p class="g-label g-muted">辅助说明与标题保持 4px 间距</p></div><button class="g-icon-button" type="button" data-demo="list" aria-label="查看这段内容"><svg class="g-icon" aria-hidden="true"><use href="#i-chevron"/></svg></button></div><div class="g-list-row"><svg class="g-icon" aria-hidden="true"><use href="#i-clock"/></svg><div class="g-list-copy"><p class="g-text">另一个自然分组</p><p class="g-label g-muted">细分隔线，不增加额外容器</p></div><span class="g-label g-muted">14:28</span></div></div></div>
+          <div id="panel-detail" role="tabpanel" aria-labelledby="tab-detail" class="ds-tab-panel" hidden><dl class="g-kv"><div><dt>内边距</dt><dd>上下 16px</dd></div><div><dt>图文间距</dt><dd>12px</dd></div><div><dt>分隔线</dt><dd>1px · border-subtle</dd></div></dl></div>
+          <div id="panel-note" role="tabpanel" aria-labelledby="tab-note" class="ds-tab-panel" hidden><p class="g-text g-secondary">选中项同时使用深色文字与 1px 下划线。支持点击、方向键及 Home / End 切换。</p></div>
+        </div>
+        <div><div class="ds-subhead"><h3 class="g-title">标签、图标按钮与浮层</h3></div><div class="g-actions ds-tags"><span class="g-tag">辅助标签</span><span class="g-tag"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-check"/></svg>状态标签</span><span class="g-label g-muted">轻量注释</span></div><div class="g-actions ds-icon-actions"><button class="g-icon-button" type="button" data-demo="add" aria-label="添加示例"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg></button><button class="g-icon-button" type="button" data-demo="copy" aria-label="复制示例文字"><svg class="g-icon" aria-hidden="true"><use href="#i-copy"/></svg></button><button class="g-icon-button" type="button" data-demo="more" aria-label="打开更多样例"><svg class="g-icon" aria-hidden="true"><use href="#i-more"/></svg></button><button class="g-icon-button" type="button" disabled aria-label="不可用的发送按钮"><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div><div class="ds-sheet-preview"><p class="g-label g-muted">浮层 / 20px 圆角 / 独立表面</p><button type="button" class="g-btn" id="openSheet">打开底部弹层</button></div></div>
+      </div>
+      <div class="ds-component-grid ds-block-start">
+        <div><div class="ds-subhead"><h3 class="g-title">对话输入区</h3><span class="g-label g-muted">g-composer</span></div>
+          <form class="g-composer" id="composerDemo" aria-label="输入区组件样例">
+            <button class="g-icon-button" type="button" data-demo="add" aria-label="输入区添加样例"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            <label class="g-sr-only" for="composerInput">输入区示例文字</label><input id="composerInput" class="g-composer-input" placeholder="说说看，我在。" autocomplete="off">
+            <button id="composerSend" class="g-icon-button" type="submit" aria-label="体验发送反馈" disabled><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+          </form><p id="composerStatus" class="g-hint ds-note" role="status">试着输入文字，查看聚焦与可发送状态。</p>
+        </div>
+        <div class="g-prose"><h3 class="g-title">输入区与消息使用相同的视觉语言</h3><p class="g-detail g-secondary">空闲时与页面融为一体；编辑时出现浅底，键盘焦点保持可见。发送按钮使用线性图标，沿用 44px 点击区域。</p><p class="g-label g-muted">消息：g-thread / g-message / g-byline<br>内容：g-content / g-content-head / g-prose<br>输入：g-composer / g-composer-input</p></div>
+      </div>
+    </section>
+
+    <section id="composition" class="ds-section" aria-labelledby="composition-title">
+      <header class="ds-section-head"><div><p class="ds-overline">03 / COMPOSITION</p><h2 id="composition-title" class="g-page-title">内容变化，规则不变。</h2></div><p class="g-label g-muted">为生成式内容准备的一套组合语法。</p></header>
+      <p class="g-text g-secondary ds-section-description">标题、正文、数据和操作共用基础组件。调整下面的内容与容器，检查不同组合下的层级、间距与换行。</p>
+      <div class="ds-lab">
+        <form class="ds-lab-controls" id="compositionControls">
+          <div class="g-field"><label for="surfaceControl">容器表面</label><select id="surfaceControl" class="g-select" aria-describedby="surfaceHint"><option value="plain" selected>无边界 · 默认</option><option value="subtle">浅底 · 局部强调</option><option value="outline">细边框 · 独立引用</option></select><p id="surfaceHint" class="g-hint">连续阅读默认无边界，以留白分组。</p></div>
+          <div class="g-field"><label for="lengthControl">内容长度</label><select id="lengthControl" class="g-select"><option value="short">简短内容</option><option value="long">长标题与长正文</option><option value="mixed">中英文与长单词</option></select></div>
+          <div class="g-field"><label for="widthControl">预览宽度</label><select id="widthControl" class="g-select"><option value="wide">宽 · 最大 480px</option><option value="narrow">窄 · 最大 320px</option></select></div>
+          <fieldset class="ds-slots"><legend class="g-label">内容模块</legend><div class="ds-slot-options"><label class="g-check"><input name="slot" type="checkbox" value="label" checked>标签</label><label class="g-check"><input name="slot" type="checkbox" value="title" checked>标题</label><label class="g-check"><input name="slot" type="checkbox" value="body" checked>正文</label><label class="g-check"><input name="slot" type="checkbox" value="metric">关键数值</label><label class="g-check"><input name="slot" type="checkbox" value="details" checked>键值信息</label><label class="g-check"><input name="slot" type="checkbox" value="media">媒体区域</label><label class="g-check"><input name="slot" type="checkbox" value="meta" checked>辅助说明</label><label class="g-check"><input name="slot" type="checkbox" value="actions" checked>操作</label></div></fieldset>
+          <label class="g-check ds-guide-check"><input id="guideControl" type="checkbox">显示模块边界</label>
+          <button class="g-btn g-btn--quiet" type="reset">恢复默认</button>
+        </form>
+        <div class="ds-lab-stage"><div class="ds-stage-label"><span class="ds-overline">LIVE SPECIMEN</span><span id="previewSize" class="g-label g-muted"></span></div><div id="previewWidth" class="ds-preview-width"><article id="compositionPreview" class="g-content" data-surface="plain" aria-label="内容组合预览"></article></div><p class="g-label g-muted ds-stage-foot">无额外内边距 · 模块间距 12 · 标题组间距 8</p><span id="compositionStatus" class="g-sr-only" role="status" aria-live="polite"></span></div>
+      </div>
+      <div class="ds-composition-rules"><div><span class="ds-index">A</span><h3 class="g-title">默认融入阅读</h3><p class="g-label g-muted">无边界内容 + 文字操作。确有分组需要时选择浅底或边框，同一区块只使用一层表面。</p></div><div><span class="ds-index">B</span><h3 class="g-title">留白形成秩序</h3><p class="g-label g-muted">标题组 8、模块之间 12、消息之间 40。模块缺失时收起空位，长内容自然换行与增高。</p></div><div><span class="ds-index">C</span><h3 class="g-title">生成内容复用组件</h3><p class="g-label g-muted">只选择模块与已有变体；不临时增加字号、颜色、阴影或按钮样式。实心确认保留给独立操作区域。</p></div></div>
+      <details class="ds-code-details"><summary>查看当前组合的 HTML <svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="ds-code-toolbar"><span class="g-label g-muted">使用 tokens.css + components.css</span><button id="copyComposition" type="button" class="g-btn g-btn--quiet">复制 HTML</button></div><pre><code id="compositionCode"></code></pre></details>
+    </section>
+
+    <section id="handoff" class="ds-section" aria-labelledby="handoff-title">
+      <header class="ds-section-head"><div><p class="ds-overline">04 / HANDOFF</p><h2 id="handoff-title" class="g-page-title">让规范成为可以使用的东西。</h2></div><p class="g-label g-muted">基础样式与展示页分离，便于继续迭代。</p></header>
+      <div class="ds-handoff-grid"><div><h3 class="g-title">可复用的样式</h3><p class="g-text g-secondary">加载基础变量和组件样式，在页面容器上添加 <code>.ghost-ui</code>。展示页的目录、网格和说明样式独立存放。</p><div class="g-actions ds-downloads"><a href="tokens.css" download class="g-btn"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-download"/></svg>基础变量</a><a href="components.css" download class="g-btn">组件样式</a><a href="tokens.json" download class="g-btn g-btn--quiet">JSON 变量</a></div></div><div class="ds-usage"><pre><code>&lt;link rel="stylesheet" href="tokens.css"&gt;
+&lt;link rel="stylesheet" href="components.css"&gt;
+
+&lt;main class="ghost-ui"&gt;
+  &lt;article class="g-content" data-surface="plain"&gt;
+    &lt;h2 class="g-title"&gt;一个清楚的标题&lt;/h2&gt;
+    &lt;p class="g-detail g-secondary"&gt;内容自然展开。&lt;/p&gt;
+    &lt;div class="g-actions g-actions--text"&gt;
+      &lt;button class="g-btn g-btn--primary"&gt;继续&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/article&gt;
+&lt;/main&gt;</code></pre></div></div>
+      <div class="ds-contract ds-block-start"><h3 class="g-title">页面接入约束</h3><dl class="g-kv"><div><dt>基础变量</dt><dd>颜色、字号、字重和间距只在 tokens.css 定义，JSON 同步导出。</dd></div><div><dt>公共组件</dt><dd>文字、内容块、操作、消息和输入区使用 g-* 类，变体在 components.css 维护。</dd></div><div><dt>页面样式</dt><dd>只负责布局与定位。若多个页面需要同一视觉调整，回到公共组件修改。</dd></div><div><dt>视觉验证</dt><dd>原稿内容样本与组合预览共用公共组件；在 320 / 390px 宽度检查长文、换行和操作状态。</dd></div></dl></div>
+      <div class="ds-contract ds-block-start"><h3 class="g-title">应用组件接入</h3><dl class="g-kv"><div><dt>内容与操作</dt><dd>g-prose--list 排列无编号详情；g-prose-label / g-prose-copy 保持行内标签；g-btn--annotation 用于附件和辅助操作。</dd></div><div><dt>导航与旅程</dt><dd>g-nav / g-nav-item 使用图标、文字与选中圆点；g-timeline-item 使用细线和固定间距组织时间条目。</dd></div><div><dt>局部弹层</dt><dd>g-overlay + g-sheet--contained 复用弹层表面，容纳在应用视口中；g-list-action 复用文字操作和列表分隔。</dd></div><div><dt>状态反馈</dt><dd>g-toast 使用浅底与辅助字号；g-wave 复用灰阶和间距，语音示意动效为 700ms，并跟随减少动态效果设置。</dd></div></dl></div>
+      <div class="ds-release-note"><span class="g-tag">0.2 / Light</span><p class="g-label g-muted">本版修订默认层级、操作强度与容器规则，并补充消息、段落与输入区组件。首页排版样本与组合预览直接使用同一套样式。</p></div>
+    </section>
+    <footer class="ds-footer"><a href="#overview" class="ds-footer-brand"><svg class="g-mark" aria-hidden="true"><use href="#ghost-mark"/></svg><span>ghost</span></a><p class="g-label g-muted">留一点空间，给内容，也给人。</p><a href="#overview" class="ds-text-link">回到顶部 ↑</a></footer>
+  </main>
+  <dialog class="g-sheet" id="demoSheet" aria-labelledby="sheetTitle" aria-describedby="sheetDescription"><div class="g-sheet-handle" aria-hidden="true"></div><div class="g-sheet-head"><h2 id="sheetTitle" class="g-title">给内容一个独立的空间</h2><button type="button" class="g-icon-button" id="closeSheet" aria-label="关闭弹层"><svg class="g-icon" aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="g-sheet-body"><p id="sheetDescription" class="g-text g-secondary">浅遮罩、圆润的上沿，以及清楚的标题与操作。焦点保留在弹层中，关闭后回到原来的按钮。</p><dl class="g-kv"><div><dt>内边距</dt><dd>24px</dd></div><div><dt>圆角</dt><dd>20px</dd></div><div><dt>出现动效</dt><dd>180ms · 位移 8px</dd></div></dl><button type="button" class="g-btn g-btn--solid" id="confirmSheet">知道了</button></div></dialog>
+  <div id="toast" class="ds-toast" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

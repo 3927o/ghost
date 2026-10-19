@@ -1,0 +1,77 @@
+/* Ghost design system · 0.2 · Light
+   Load before components.css. All public tokens use the --ghost- prefix. */
+:root {
+  color-scheme: light;
+  --ghost-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --ghost-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --ghost-font-brand: Arial, sans-serif;
+
+  --ghost-bg-canvas: #FAFAFA;
+  --ghost-bg-surface: #FFFFFF;
+  --ghost-bg-subtle: #F3F3F3;
+  --ghost-text-primary: #242424;
+  --ghost-text-secondary: #595959;
+  --ghost-text-muted: #6E6E6E;
+  --ghost-text-disabled: #A6A6A6;
+  --ghost-text-inverse: #FFFFFF;
+  --ghost-border-subtle: #E7E7E7;
+  --ghost-border-control: #8A8A8A;
+  --ghost-action-default: #242424;
+  --ghost-action-hover: #3D3D3D;
+  --ghost-action-pressed: #111111;
+  --ghost-state-hover: #F0F0F0;
+  --ghost-state-pressed: #E8E8E8;
+  --ghost-focus-ring: #242424;
+  --ghost-overlay: rgb(0 0 0 / 24%);
+
+  --ghost-type-page-size: 22px;
+  --ghost-type-page-line: 32px;
+  --ghost-type-title-size: 14px;
+  --ghost-type-title-line: 24px;
+  --ghost-type-body-size: 14px;
+  --ghost-type-body-line: 28px;
+  --ghost-type-detail-size: 13px;
+  --ghost-type-detail-line: 26px;
+  --ghost-type-label-size: 11px;
+  --ghost-type-label-line: 18px;
+  --ghost-type-control-size: 12px;
+  --ghost-type-control-line: 20px;
+  --ghost-type-metric-size: 20px;
+  --ghost-type-metric-line: 28px;
+  --ghost-weight-regular: 400;
+  --ghost-weight-medium: 500;
+  --ghost-brand-size: 23px;
+  --ghost-brand-line: 32px;
+  --ghost-brand-weight: 700;
+  --ghost-brand-tracking: -.8px;
+
+  --ghost-space-1: 4px;
+  --ghost-space-2: 8px;
+  --ghost-space-3: 12px;
+  --ghost-space-4: 16px;
+  --ghost-space-6: 24px;
+  --ghost-space-8: 32px;
+  --ghost-space-10: 40px;
+
+  /* Semantic rhythm: composition uses these tokens, never local spacing. */
+  --ghost-content-gap: var(--ghost-space-3);
+  --ghost-heading-gap: var(--ghost-space-2);
+  --ghost-prose-gap: var(--ghost-space-2);
+  --ghost-message-gap: var(--ghost-space-10);
+  --ghost-message-inset: var(--ghost-space-6);
+  --ghost-surface-inset: var(--ghost-space-4);
+  --ghost-action-inset: var(--ghost-space-2);
+  --ghost-radius-control: 8px;
+  --ghost-radius-content: 12px;
+  --ghost-radius-sheet: 20px;
+  --ghost-control-height: 44px;
+  --ghost-icon-small: 16px;
+  --ghost-icon-default: 20px;
+  --ghost-stroke: 1.5;
+  --ghost-content-measure: 36rem;
+  --ghost-duration-fast: 120ms;
+  --ghost-duration-base: 180ms;
+  --ghost-duration-listening: 700ms;
+  --ghost-ease: cubic-bezier(.2, .8, .2, 1);
+  --ghost-shadow-overlay: 0 16px 48px rgb(0 0 0 / 12%);
+}
