@@ -2,160 +2,58 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-width: 0;
   min-height: 0;
-  background-color: var(--bg-primary);
-}
-
-.chat.empty {
-  justify-content: center;
-  align-items: center;
 }
 
 .empty-state {
-  text-align: center;
-}
-
-.empty-state h2 {
-  font-size: 32px;
-  margin-bottom: 12px;
-}
-
-.empty-state p {
-  font-size: 16px;
-  color: var(--text-secondary);
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: var(--ghost-space-10) var(--ghost-message-inset);
 }
 
 .messages {
   flex: 1;
-  overflow-y: auto;
-  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: var(--ghost-space-8) var(--ghost-message-inset);
+  scroll-padding-block: var(--ghost-space-8);
 }
 
-.message {
-  display: flex;
-  gap: 12px;
-  max-width: 800px;
-  margin: 0 auto;
+.messages-thread {
   width: 100%;
-}
-
-.message-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
+  max-width: var(--ghost-content-measure);
+  margin-inline: auto;
 }
 
 .message-content {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
-.message-text {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background-color: var(--bg-secondary);
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  line-height: 1.5;
+.g-message--user .message-content {
+  width: fit-content;
+  max-width: 85%;
 }
 
-.message.user .message-text {
-  background-color: var(--accent);
+.composer-area {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: calc(var(--ghost-content-measure) + var(--ghost-message-inset) * 2);
+  margin-inline: auto;
+  padding: var(--ghost-space-3) var(--ghost-message-inset) max(var(--ghost-space-6), env(safe-area-inset-bottom));
 }
 
-.message-text.error {
-  background-color: var(--error);
-  color: white;
-}
+@media (max-width: 720px) {
+  .messages {
+    padding-top: var(--ghost-space-4);
+  }
 
-.message-text .cursor {
-  display: inline-block;
-  animation: blink 1s infinite;
-  margin-left: 2px;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-.message-time {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-  padding-left: 16px;
-}
-
-.run-timeline, .assistant-part { display: flex; flex-direction: column; gap: 10px; }
-.assistant-part:empty { display: none; }
-.assistant-part.abandoned { opacity: 0.6; }
-.tool-card, .reasoning-block { border: 1px solid var(--border); border-radius: 10px; background: var(--bg-secondary); }
-.tool-card summary, .reasoning-block summary { padding: 10px 14px; cursor: pointer; color: var(--text-secondary); }
-.tool-name { font-family: monospace; color: var(--text-primary); margin-right: 12px; overflow-wrap: anywhere; }
-.tool-status { font-size: 12px; }
-.tool-card.running .tool-status, .tool-card.pending .tool-status { color: var(--accent); }
-.tool-card.failed, .tool-card.interrupted { border-color: var(--error); }
-.tool-detail, .reasoning-block > div, .tool-error { padding: 0 14px 12px; }
-.detail-label, .part-notice { font-size: 12px; color: var(--text-secondary); }
-.tool-detail pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 6px 0 0; max-height: 320px; overflow-y: auto; }
-.reasoning-block > div { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.5; }
-.tool-error { color: var(--error); white-space: pre-wrap; }
-
-.input-area {
-  border-top: 1px solid var(--border);
-  padding: 20px;
-  display: flex;
-  gap: 12px;
-  background-color: var(--bg-secondary);
-}
-
-.input-area textarea {
-  flex: 1;
-  padding: 12px 16px;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-family: inherit;
-  resize: none;
-  min-height: 24px;
-  max-height: 200px;
-  line-height: 1.5;
-}
-
-.input-area textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.input-area button {
-  padding: 12px 24px;
-  background-color: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.input-area button:hover:not(:disabled) {
-  background-color: var(--accent-hover);
-}
-
-.input-area button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  .composer-area {
+    padding-bottom: max(var(--ghost-space-4), env(safe-area-inset-bottom));
+  }
 }

@@ -1,19 +1,11 @@
 .app {
   display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   overflow: hidden;
 }
 
-.retry-button {
-  margin-top: 16px;
-  padding: 10px 20px;
-  color: white;
-  background: var(--accent);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
 .chat-panel {
   display: flex;
   flex: 1;
@@ -22,10 +14,13 @@
   flex-direction: column;
 }
 
-.connection-notice {
-  padding: 10px 20px;
-  color: #8a5500;
-  background: #fff6df;
+.chat-panel:focus {
+  outline: none;
 }
 
-.connection-notice button { margin-left: 12px; }
+.connection-notice {
+  width: 100%;
+  max-width: calc(var(--ghost-content-measure) + var(--ghost-message-inset) * 2);
+  margin-inline: auto;
+  padding: 0 var(--ghost-message-inset) var(--ghost-space-4);
+}

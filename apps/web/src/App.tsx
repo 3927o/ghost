@@ -2,7 +2,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { isTerminalRun, reduceRunEvent, type MessageResponse, type RunStreamEvent, type RunView } from '@ghost/contracts'
 import { Chat } from './components/Chat'
-import { Sidebar } from './components/Sidebar'
+import { AppHeader } from './components/AppHeader'
+import { ConversationState } from './components/ConversationState'
+import { Icon } from './components/Icon'
 import { clientContext } from './client-context'
 import { readMessageStream, waitToReconnect } from './lib/message-stream'
 import type { Conversation } from './types'
@@ -126,24 +128,35 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <Sidebar userId={clientContext.userId} channel={clientContext.channel} />
-      <div className="chat-panel">
-        {notice && <div className="connection-notice" role="status">
-          {notice}
-          {retrySubmission.current && <button onClick={() => handleSendMessage(retrySubmission.current!.content)} disabled={sending}>重试提交</button>}
+    <div className="app ghost-ui">
+      <a className="g-skip-link" href="#conversation">跳到对话</a>
+      <AppHeader userId={clientContext.userId} />
+      <main className="chat-panel" id="conversation" tabIndex={-1} aria-label="对话">
+        {notice && <div className="connection-notice">
+          <div className="g-status" role="status">
+            <Icon name="info" small />
+            <p className="g-detail">{notice}</p>
+            {retrySubmission.current && <button className="g-btn g-btn--primary" type="button" onClick={() => handleSendMessage(retrySubmission.current!.content)} disabled={sending}>重试提交</button>}
+          </div>
         </div>}
         {loading ? (
-          <div className="chat empty"><div className="empty-state"><p>正在加载对话…</p></div></div>
+          <div className="chat" role="status" aria-busy="true"><ConversationState
+            icon={<span className="g-spinner" aria-hidden="true" />}
+            title="正在加载对话"
+            description="稍等片刻，正在读取对话记录。"
+          /></div>
         ) : loadError ? (
-          <div className="chat empty"><div className="empty-state">
-            <p>对话加载失败，请检查后端服务。</p>
-            <button className="retry-button" onClick={() => setReload(value => value + 1)}>重新加载</button>
-          </div></div>
+          <div className="chat" role="alert"><ConversationState
+            icon={<Icon name="info" />}
+            title="暂时无法加载对话"
+            description="请检查后端服务后重试。"
+          >
+            <button className="g-btn g-btn--primary" type="button" onClick={() => setReload(value => value + 1)}>重新加载</button>
+          </ConversationState></div>
         ) : (
           <Chat conversation={conversation} onSendMessage={handleSendMessage} disabled={sending} />
         )}
-      </div>
+      </main>
     </div>
   )
 }
