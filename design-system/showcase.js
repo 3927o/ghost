@@ -63,7 +63,7 @@
   }
 
   const states = [['default', '默认'], ['hover', '悬停'], ['pressed', '按下'], ['focus', '聚焦'], ['disabled', '禁用'], ['loading', '加载']];
-  for (const [kind, label] of [['secondary', '文字操作'], ['primary', '重点文字'], ['solid', '独立确认']]) {
+  for (const [kind, label] of [['secondary', '文字操作'], ['primary', '重点文字'], ['danger', '危险操作'], ['solid', '独立确认']]) {
     const row = document.createElement('div');
     row.className = 'ds-state-row';
     row.innerHTML = `<span class="g-label">${label}</span>`;
@@ -81,7 +81,8 @@
         button.setAttribute('aria-disabled', 'true');
         button.innerHTML = '<span class="g-spinner" aria-hidden="true"></span>加载';
       } else {
-        button.textContent = kind === 'solid' ? '确认' : kind === 'primary' ? '继续' : '调整';
+        const text = kind === 'solid' ? '确认' : kind === 'primary' ? '继续' : kind === 'danger' ? '删除' : '调整';
+        button.innerHTML = kind === 'primary' ? `${icon('arrow')}${text}` : kind === 'danger' ? `${icon('alert')}${text}` : text;
       }
       button.addEventListener('click', () => { if (state !== 'loading') toast(`${label} · ${name}样例`); });
       const caption = document.createElement('span');
@@ -106,23 +107,67 @@
     $('actionStatus').textContent = '已完成';
   });
   $('invalidInput').addEventListener('input', event => {
-    const valid = Boolean(event.target.value.trim());
+    const value = event.target.value.trim();
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     event.target.setAttribute('aria-invalid', String(!valid));
-    $('invalidHint').innerHTML = `${icon(valid ? 'check' : 'info')}<span>${valid ? '内容已填写。' : '请填写内容后继续。'}</span>`;
+    $('invalidHint').classList.toggle('g-hint--error', !valid);
+    $('invalidHint').innerHTML = valid
+      ? `${icon('check')}<span>收件人邮箱格式正确。</span>`
+      : `${icon('alert')}<span><strong>错误：</strong>${value ? '邮箱格式不完整，请检查 @ 后的域名。' : '请输入收件人邮箱，例如 zhouhua@example.com。'}</span>`;
   });
   document.querySelectorAll('[data-sample-action]').forEach(button => {
     button.addEventListener('click', () => toast('排版样本 · 文字操作反馈'));
   });
+  // Composer: idle → sending → running (stop) → done, or → failed with 重试.
+  const composer = $('composerDemo');
+  const arrowIcon = icon('arrow', false);
+  let composerTimer;
+  function setComposer(state, message, error = false) {
+    clearTimeout(composerTimer);
+    if (state) composer.dataset.state = state; else delete composer.dataset.state;
+    const send = $('composerSend');
+    const busy = state === 'sending';
+    send.toggleAttribute('aria-busy', busy);
+    send.setAttribute('aria-label', busy ? '正在发送' : '发送');
+    send.innerHTML = busy ? '<span class="g-spinner" aria-hidden="true"></span>' : arrowIcon;
+    send.disabled = !busy && !$('composerInput').value.trim();
+    $('composerStatus').classList.toggle('g-hint--error', error);
+    $('composerStatus').classList.toggle('g-feedback', error);
+    $('composerStatus').innerHTML = error ? `${icon('alert')}<span><strong>错误：</strong>${message}</span>` : message;
+    $('composerRetry').hidden = state !== 'failed';
+    // Failed reads like an input error: aria-invalid on the field; the hint is already linked via aria-describedby.
+    if (state === 'failed') $('composerInput').setAttribute('aria-invalid', 'true'); else $('composerInput').removeAttribute('aria-invalid');
+  }
   $('composerInput').addEventListener('input', event => {
-    $('composerSend').disabled = !event.target.value.trim();
+    if (composer.dataset.state === 'failed') setComposer(null, '已修改内容，可以重新发送。');
+    if (!composer.dataset.state) $('composerSend').disabled = !event.target.value.trim();
   });
-  $('composerDemo').addEventListener('submit', event => {
+  function sendComposer() {
+    const text = $('composerInput').value.trim();
+    if (!text) return;
+    setComposer('sending', '正在发送…');
+    composerTimer = setTimeout(() => {
+      if (text.includes('失败')) { setComposer('failed', '网络中断，消息未发送。内容已保留。', true); return; }
+      $('composerInput').value = '';
+      setComposer('running', 'Ghost 正在回复，可随时停止生成。');
+      composerTimer = setTimeout(() => { setComposer(null, '回复完成，输入区恢复为空闲状态。'); }, 2400);
+    }, 700);
+  }
+  composer.addEventListener('submit', event => {
     event.preventDefault();
-    if (!$('composerInput').value.trim()) return;
-    $('composerInput').value = '';
-    $('composerSend').disabled = true;
-    $('composerStatus').textContent = '已展示发送反馈，输入区恢复为空闲状态。';
-    $('composerInput').focus();
+    if (composer.dataset.state === 'sending' || composer.dataset.state === 'running') return;
+    sendComposer();
+  });
+  $('composerStop').addEventListener('click', () => { setComposer(null, '已停止生成。'); $('composerInput').focus(); });
+  $('composerRetry').addEventListener('click', () => { $('composerInput').value = $('composerInput').value.replace(/失败/g, ''); sendComposer(); $('composerInput').focus(); });
+
+  // Listening wave: state is shown by colour weight and visible text, not only by motion.
+  $('waveToggle').addEventListener('click', () => {
+    const on = !$('waveLive').classList.contains('playing');
+    $('waveLive').classList.toggle('playing', on);
+    $('waveToggle').setAttribute('aria-pressed', String(on));
+    $('waveToggle').textContent = on ? '暂停聆听' : '开始聆听';
+    $('waveStatus').textContent = on ? '正在聆听…' : '已暂停';
   });
 
   const tabs = [...document.querySelectorAll('.g-tab')];
@@ -153,14 +198,29 @@
   $('openSheet').addEventListener('click', openSheet);
   $('closeSheet').addEventListener('click', () => sheet.close());
   $('confirmSheet').addEventListener('click', () => sheet.close());
-  sheet.addEventListener('close', () => { document.body.classList.remove('ds-modal-open'); sheetTrigger?.focus({ preventScroll: true }); });
+  // Irreversible agent actions (send, delete) open a separate confirmation sheet with the solid button.
+  const confirmSheets = [sheet, $('confirmSendSheet'), $('confirmDangerSheet')];
+  function openDialog(dialog) {
+    sheetTrigger = document.activeElement;
+    dialog.showModal();
+    document.body.classList.add('ds-modal-open');
+  }
+  $('specimenSend').addEventListener('click', () => openDialog($('confirmSendSheet')));
+  $('dangerDemo').addEventListener('click', () => openDialog($('confirmDangerSheet')));
+  document.querySelectorAll('[data-close-sheet]').forEach(button => button.addEventListener('click', () => {
+    button.closest('dialog').close();
+    if (button.dataset.toast) toast(button.dataset.toast);
+  }));
   let backdropPointer = false;
-  const outsideSheet = event => {
-    const box = sheet.getBoundingClientRect();
-    return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom;
-  };
-  sheet.addEventListener('pointerdown', event => { backdropPointer = event.target === sheet && outsideSheet(event); });
-  sheet.addEventListener('click', event => { if (backdropPointer && event.target === sheet && outsideSheet(event)) sheet.close(); backdropPointer = false; });
+  for (const dialog of confirmSheets) {
+    const outside = event => {
+      const box = dialog.getBoundingClientRect();
+      return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom;
+    };
+    dialog.addEventListener('close', () => { document.body.classList.remove('ds-modal-open'); sheetTrigger?.focus({ preventScroll: true }); });
+    dialog.addEventListener('pointerdown', event => { backdropPointer = event.target === dialog && outside(event); });
+    dialog.addEventListener('click', event => { if (backdropPointer && event.target === dialog && outside(event)) dialog.close(); backdropPointer = false; });
+  }
   document.querySelectorAll('[data-demo]').forEach(button => button.addEventListener('click', () => {
     if (button.dataset.demo === 'more' || button.dataset.demo === 'list') openSheet();
     else if (button.dataset.demo === 'copy') copy('给重要的内容，一点空间。', '示例文字已复制');

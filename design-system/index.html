@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Ghost — 设计系统 0.2</title>
-  <link rel="stylesheet" href="tokens.css?v=0.2.1">
-  <link rel="stylesheet" href="components.css?v=0.2.1">
-  <link rel="stylesheet" href="showcase.css?v=0.2.1">
+  <title>Ghost — 设计系统 0.4</title>
+  <link rel="stylesheet" href="tokens.css?v=0.4.0">
+  <link rel="stylesheet" href="components.css?v=0.4.0">
+  <link rel="stylesheet" href="showcase.css?v=0.4.0">
   <script src="showcase.js" defer></script>
 </head>
 <body class="ghost-ui">
@@ -23,12 +23,15 @@
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
     <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v.1"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 4.2 2.6 17.6a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z"/><path d="M12 9.5v4.5M12 17.2v.1"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 2.8 21.2 12 12 21.2 2.8 12Z"/><path d="M12 8v4.6M12 15.8v.1"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></symbol>
     <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
   </defs></svg>
   <a class="ds-skip" href="#main">跳到主要内容</a>
   <aside class="ds-sidebar">
     <a href="#overview" class="ds-brand" aria-label="Ghost 设计系统首页"><svg class="g-mark" aria-hidden="true"><use href="#ghost-mark"/></svg><span>ghost<span class="ds-brand-dot">.</span></span></a>
-    <p class="g-label g-muted ds-sidebar-subtitle">DESIGN SYSTEM / 0.2</p>
+    <p class="g-label g-muted ds-sidebar-subtitle">设计系统 / 0.4</p>
     <nav class="ds-nav" aria-label="设计系统章节">
       <a href="#overview" aria-current="location"><span>00</span>设计语言</a>
       <a href="#foundations"><span>01</span>基础规范</a>
@@ -41,7 +44,7 @@
 
   <main id="main" class="ds-main">
     <section id="overview" class="ds-overview ds-section" aria-labelledby="overview-title">
-      <div class="ds-topline"><span class="ds-overline">GHOST / VISUAL LANGUAGE</span><span class="g-label g-muted">版本 0.2 <span class="ds-topline-divider">/</span> 2026.10</span></div>
+      <div class="ds-topline"><span class="ds-overline">Ghost / 视觉语言</span><span class="g-label g-muted">版本 0.4 <span class="ds-topline-divider">/</span> 2026.10</span></div>
       <div class="ds-intro-grid">
         <div class="ds-intro-copy"><p class="g-label g-muted">00 — 设计语言</p><h1 id="overview-title" class="ds-display">文字在前，<br>界面轻一点。</h1><p class="g-text g-secondary">从原稿的阅读感出发：<br>舒展的行距、自然的分组、轻量的操作。<br>把这些分寸，变成组件的默认值。</p><a href="#components" class="ds-text-link">查看组件规范 <span aria-hidden="true">↗</span></a><p class="g-label g-muted ds-baseline-note">右侧使用原稿内容作为排版样本。<br>由公共组件直接组成，没有独立的内容样式。</p></div>
         <div class="ds-specimen-wrap">
@@ -53,14 +56,14 @@
                 <div class="g-byline"><svg class="g-mark" aria-hidden="true"><use href="#ghost-mark"/></svg><span>Ghost</span><span>14:28</span></div>
                 <p class="g-text">下午好，林木。<br>邮件已经整理好了，保留了三件最重要的事。</p>
                 <article class="g-content" data-surface="plain">
-                  <header class="g-content-head"><p class="g-label g-muted">给周华的草稿</p><h2 class="g-title g-secondary">Q2 迭代架构权衡及工期共识</h2></header>
+                  <header class="g-content-head"><p class="g-label g-muted">给周华的草稿</p><h2 class="g-title">Q2 迭代架构权衡及工期共识</h2></header>
                   <div class="g-prose">
                     <p class="g-detail g-secondary">内核模块迁移：主链路改造在 5 月 15 日前完成，不占用运营排期。</p>
                     <p class="g-detail g-secondary">容灾与降级：补充 5% 灰度观测机制，评审时聚焦关键风险。</p>
                     <p class="g-detail g-secondary">需要确认：请周华在下午会前确认附件第 3 节的安全指标。</p>
                   </div>
                   <p class="g-label g-muted">Q2 架构评审附件.pdf</p>
-                  <div class="g-actions g-actions--text"><button class="g-btn g-btn--primary" type="button" data-sample-action>确认发送</button><button class="g-btn" type="button" data-sample-action>修改</button><button class="g-icon-button" type="button" data-sample-action aria-label="排版样本的更多操作"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-more"/></svg></button></div>
+                  <div class="g-actions g-actions--text"><button class="g-btn g-btn--primary" type="button" id="specimenSend" aria-haspopup="dialog"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-arrow"/></svg>确认发送</button><button class="g-btn" type="button" data-sample-action>修改</button><button class="g-icon-button" type="button" data-sample-action aria-label="更多操作"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-more"/></svg></button></div>
                 </article>
               </section>
               <section class="g-message g-message--user"><p class="g-detail g-secondary">另外帮我留意下，<br>刚买的咖啡豆到了没。</p></section>
@@ -73,12 +76,12 @@
     </section>
 
     <section id="foundations" class="ds-section" aria-labelledby="foundations-title">
-      <header class="ds-section-head"><div><p class="ds-overline">01 / FOUNDATIONS</p><h2 id="foundations-title" class="g-page-title">基础规范</h2></div><p class="g-label g-muted">少量、明确、有职责的基础变量。</p></header>
+      <header class="ds-section-head"><div><p class="ds-overline">01 / 基础</p><h2 id="foundations-title" class="g-page-title">基础规范</h2></div><p class="g-label g-muted">少量、明确、有职责的基础变量。</p></header>
       <div class="ds-subhead"><h3 class="g-title">颜色</h3><span class="g-label g-muted">按语义使用，而非挑选相近的灰色</span></div>
       <div id="colorTokens" class="ds-swatches" aria-label="颜色变量，点击复制"></div>
-      <p class="ds-note g-label g-muted">常规内容使用前三档文字色；禁用色只用于不可用状态。状态同时通过文字或图标表达。</p>
+      <p class="ds-note g-label g-muted">常规内容使用前三档文字色；禁用色只用于不可用状态。状态同时通过文字或图标表达：错误一律使用三角警示图标，文案以“错误：”或具体的失败原因开头；警告（不可撤回、会对外产生影响，但还没有出错）使用菱形警示图标与左侧粗线，文案以“不可撤回：”等加粗短语开头。两者都用形状（双线、外框、左线、叉形标记）与字重区分，不依赖颜色。</p>
 
-      <div class="ds-subhead ds-block-start"><h3 class="g-title">文字</h3><span class="g-label g-muted">系统字体 · Regular 400 / Medium 500</span></div>
+      <div class="ds-subhead ds-block-start"><h3 class="g-title">文字</h3><span class="g-label g-muted">系统字体 · Regular 400 / Medium 500 / Semibold 600</span></div>
       <div class="ds-type-table">
         <div class="ds-type-row"><div><span class="g-label">页面标题</span><code data-type-spec></code></div><p class="g-page-title">给重要的内容，一点空间。</p></div>
         <div class="ds-type-row"><div><span class="g-label">内容标题</span><code data-type-spec></code></div><p class="g-title">每一段内容，都有清楚的起点。</p></div>
@@ -89,24 +92,24 @@
       <p class="ds-note g-label g-muted">正文左对齐，不两端拉伸；长文本按容器宽度自然换行。触屏输入控件使用 16px，保证编辑时的可读性。展示页大标题属于文档排版，不进入产品字号体系。</p>
 
       <div class="ds-foundation-grid ds-block-start">
-        <div><div class="ds-subhead"><h3 class="g-title">间距</h3><span class="g-label g-muted">4px 基准</span></div><div id="spacingScale" class="ds-spacing"></div><p class="g-label g-muted ds-note">段落 8 · 内容模块 12 · 独立表面内距 16<br>页面侧距 24 · 消息之间 40 · 上方按 4 倍展示</p></div>
+        <div><div class="ds-subhead"><h3 class="g-title">间距</h3><span class="g-label g-muted">4px 基准</span></div><div id="spacingScale" class="ds-spacing"></div><p class="g-label g-muted ds-note">段落 12 · 内容模块 12 · 独立表面内距 16<br>页面侧距 24 · 消息之间 40 · 上方按 4 倍展示</p></div>
         <div><div class="ds-subhead"><h3 class="g-title">圆角与边界</h3></div><div class="ds-radius-row"><div><span class="ds-radius-shape" style="--demo-radius:var(--ghost-radius-control)"></span><span class="g-label">控件 8</span></div><div><span class="ds-radius-shape" style="--demo-radius:var(--ghost-radius-content)"></span><span class="g-label">容器 12</span></div><div><span class="ds-radius-shape" style="--demo-radius:var(--ghost-radius-sheet)"></span><span class="g-label">浮层 20</span></div></div><p class="g-label g-muted ds-note">普通内容无阴影；细线组织分组；阴影用于浮层。</p></div>
       </div>
-      <div class="ds-icon-spec ds-block-start"><div><h3 class="g-title">图标与动效</h3><p class="g-label g-muted">16 / 20px · 1.5px 描边 · 44px 点击区域</p></div><div class="ds-icon-line" aria-label="图标样例"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-chat"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-clock"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-copy"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-more"/></svg></div><p class="g-label g-muted">反馈 120ms · 浮层 180ms<br>跟随系统的减少动态效果设置</p></div>
+      <div class="ds-icon-spec ds-block-start"><div><h3 class="g-title">图标与动效</h3><p class="g-label g-muted">16 / 20px · 1.5px 描边 · 44px 点击区域</p></div><div class="ds-icon-line" aria-label="图标样例"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-chat"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-clock"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-copy"/></svg><svg class="g-icon" aria-hidden="true"><use href="#i-more"/></svg><span class="ds-icon-pair"><svg class="g-icon" aria-hidden="true"><use href="#i-info"/></svg><span class="g-label g-muted">说明</span></span><span class="ds-icon-pair"><svg class="g-icon" aria-hidden="true"><use href="#i-alert"/></svg><span class="g-label">错误</span></span><span class="ds-icon-pair"><svg class="g-icon" aria-hidden="true"><use href="#i-warning"/></svg><span class="g-label">警告</span></span></div><p class="g-label g-muted">反馈 120ms · 浮层 180ms<br>跟随系统的减少动态效果设置</p></div>
     </section>
 
     <section id="components" class="ds-section" aria-labelledby="components-title">
-      <header class="ds-section-head"><div><p class="ds-overline">02 / COMPONENTS</p><h2 id="components-title" class="g-page-title">组件与状态</h2></div><p class="g-label g-muted">同一组样式，覆盖每一个交互时刻。</p></header>
+      <header class="ds-section-head"><div><p class="ds-overline">02 / 组件</p><h2 id="components-title" class="g-page-title">组件与状态</h2></div><p class="g-label g-muted">同一组样式，覆盖每一个交互时刻。</p></header>
       <div class="ds-subhead"><h3 class="g-title">按钮</h3><span class="g-label g-muted">文字 12 / 20 · 点击区域 ≥44 · 图文间距 8</span></div>
-      <p class="g-detail g-secondary ds-component-note">内容中的操作默认使用文字按钮；重点操作加深文字。实心按钮仅用于独立弹层或表单的最终确认，每组至多一个。</p>
-      <div id="buttonStates" class="ds-button-matrix" aria-label="三种按钮的六种状态"></div>
+      <p class="g-detail g-secondary ds-component-note">内容中的操作默认使用文字按钮；重点操作使用 600 字重并带前置图标。实心按钮仅用于独立弹层或表单的最终确认，每组至多一个。会对外产生影响或不可撤回的代理操作（发送、提交、删除）必须经过独立弹层确认；危险操作使用细边框 + 警示图标的 g-btn--danger。</p>
+      <div id="buttonStates" class="ds-button-matrix" aria-label="四种按钮的六种状态"></div>
       <div class="ds-live-row"><p class="g-label g-muted">真实交互：点击按钮体验加载与完成反馈。</p><button id="liveAction" type="button" class="g-btn g-btn--primary">试一次</button><span id="actionStatus" class="g-label g-muted" role="status" aria-live="polite">准备好了</span></div>
 
       <div class="ds-subhead ds-block-start"><h3 class="g-title">输入</h3><span class="g-label g-muted">常态单线 · 聚焦明确 · 反馈就近</span></div>
       <div class="ds-input-grid">
         <div class="g-field"><label for="defaultInput">默认</label><input id="defaultInput" class="g-input" placeholder="写下一个想法" aria-describedby="defaultHint"><p id="defaultHint" class="g-hint">点击或用 Tab 键体验聚焦状态。</p></div>
         <div class="g-field"><label for="filledInput">已填写</label><input id="filledInput" class="g-input" value="让内容自然呼吸" aria-describedby="filledHint"><p id="filledHint" class="g-hint">标签保留，输入内容保持主要文字色。</p></div>
-        <div class="g-field"><label for="invalidInput">校验反馈</label><input id="invalidInput" class="g-input" aria-invalid="true" aria-describedby="invalidHint" placeholder="试着输入文字"><p id="invalidHint" class="g-hint g-feedback" role="status"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-info"/></svg><span>请填写内容后继续。</span></p></div>
+        <div class="g-field"><label for="invalidInput">收件人邮箱（校验错误）</label><input id="invalidInput" class="g-input" type="email" aria-invalid="true" aria-describedby="invalidHint" placeholder="name@example.com" autocomplete="off"><p id="invalidHint" class="g-hint g-hint--error g-feedback" role="status"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg><span><strong>错误：</strong>请输入收件人邮箱，例如 zhouhua@example.com。</span></p></div>
         <div class="g-field"><label for="disabledInput">不可用</label><input id="disabledInput" class="g-input" disabled value="暂不可编辑" aria-describedby="disabledHint"><p id="disabledHint" class="g-hint">禁用态保留结构，并降低视觉权重。</p></div>
       </div>
 
@@ -116,22 +119,79 @@
           <div id="panel-detail" role="tabpanel" aria-labelledby="tab-detail" class="ds-tab-panel" hidden><dl class="g-kv"><div><dt>内边距</dt><dd>上下 16px</dd></div><div><dt>图文间距</dt><dd>12px</dd></div><div><dt>分隔线</dt><dd>1px · border-subtle</dd></div></dl></div>
           <div id="panel-note" role="tabpanel" aria-labelledby="tab-note" class="ds-tab-panel" hidden><p class="g-text g-secondary">选中项同时使用深色文字与 1px 下划线。支持点击、方向键及 Home / End 切换。</p></div>
         </div>
-        <div><div class="ds-subhead"><h3 class="g-title">标签、图标按钮与浮层</h3></div><div class="g-actions ds-tags"><span class="g-tag">辅助标签</span><span class="g-tag"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-check"/></svg>状态标签</span><span class="g-label g-muted">轻量注释</span></div><div class="g-actions ds-icon-actions"><button class="g-icon-button" type="button" data-demo="add" aria-label="添加示例"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg></button><button class="g-icon-button" type="button" data-demo="copy" aria-label="复制示例文字"><svg class="g-icon" aria-hidden="true"><use href="#i-copy"/></svg></button><button class="g-icon-button" type="button" data-demo="more" aria-label="打开更多样例"><svg class="g-icon" aria-hidden="true"><use href="#i-more"/></svg></button><button class="g-icon-button" type="button" disabled aria-label="不可用的发送按钮"><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div><div class="ds-sheet-preview"><p class="g-label g-muted">浮层 / 20px 圆角 / 独立表面</p><button type="button" class="g-btn" id="openSheet">打开底部弹层</button></div></div>
+        <div><div class="ds-subhead"><h3 class="g-title">标签、图标按钮与浮层</h3></div><div class="g-actions ds-tags"><span class="g-tag">辅助标签</span><span class="g-tag"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-check"/></svg>状态标签</span><span class="g-label g-muted">轻量注释</span></div><div class="g-actions ds-icon-actions"><button class="g-icon-button" type="button" data-demo="add" aria-label="添加"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg></button><button class="g-icon-button" type="button" data-demo="copy" aria-label="复制"><svg class="g-icon" aria-hidden="true"><use href="#i-copy"/></svg></button><button class="g-icon-button" type="button" data-demo="more" aria-label="更多操作"><svg class="g-icon" aria-hidden="true"><use href="#i-more"/></svg></button><button class="g-icon-button" type="button" disabled aria-label="发送"><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div><div class="ds-sheet-preview"><p class="g-label g-muted">浮层 / 20px 圆角 / 独立表面</p><button type="button" class="g-btn" id="openSheet">打开底部弹层</button></div></div>
       </div>
       <div class="ds-component-grid ds-block-start">
         <div><div class="ds-subhead"><h3 class="g-title">对话输入区</h3><span class="g-label g-muted">g-composer</span></div>
-          <form class="g-composer" id="composerDemo" aria-label="输入区组件样例">
-            <button class="g-icon-button" type="button" data-demo="add" aria-label="输入区添加样例"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
-            <label class="g-sr-only" for="composerInput">输入区示例文字</label><input id="composerInput" class="g-composer-input" placeholder="说说看，我在。" autocomplete="off">
-            <button id="composerSend" class="g-icon-button" type="submit" aria-label="体验发送反馈" disabled><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
-          </form><p id="composerStatus" class="g-hint ds-note" role="status">试着输入文字，查看聚焦与可发送状态。</p>
+          <form class="g-composer" id="composerDemo" aria-label="发送消息">
+            <button class="g-icon-button" type="button" data-demo="add" aria-label="添加附件"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            <label class="g-sr-only" for="composerInput">消息</label><input id="composerInput" class="g-composer-input" placeholder="说说看，我在。" autocomplete="off" aria-describedby="composerStatus">
+            <button id="composerSend" class="g-icon-button" type="submit" aria-label="发送" disabled><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+            <button id="composerStop" class="g-icon-button g-composer-stop" type="button" aria-label="停止生成"><svg class="g-icon" aria-hidden="true"><use href="#i-stop"/></svg></button>
+          </form>
+          <div class="g-composer-feedback ds-note"><p id="composerStatus" class="g-hint" role="status">试着输入文字，查看聚焦与可发送状态；内容包含“失败”时演示发送失败。</p><button id="composerRetry" class="g-btn g-btn--primary" type="button" hidden>重试</button></div>
+          <div class="ds-composer-states" aria-label="输入区状态示例">
+            <div><span class="g-label g-muted">不可发送</span><div class="g-composer ds-static"><span class="g-composer-input ds-fake-input g-muted">说说看，我在。</span><button class="g-icon-button" type="button" disabled aria-label="发送"><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div></div>
+            <div><span class="g-label g-muted">可发送</span><div class="g-composer ds-static"><span class="g-composer-input ds-fake-input">帮我回复周华</span><button class="g-icon-button" type="submit" form="ds-none" aria-label="发送"><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div></div>
+            <div><span class="g-label g-muted">发送中</span><div class="g-composer ds-static" data-state="sending"><span class="g-composer-input ds-fake-input">帮我回复周华</span><button class="g-icon-button" type="submit" form="ds-none" aria-label="正在发送" aria-busy="true"><span class="g-spinner" aria-hidden="true"></span></button></div></div>
+            <div><span class="g-label g-muted">生成中 · 可停止</span><div class="g-composer ds-static" data-state="running"><span class="g-composer-input ds-fake-input g-muted">Ghost 正在回复…</span><button class="g-icon-button" type="submit" form="ds-none" aria-label="发送"><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button><button class="g-icon-button g-composer-stop" type="button" aria-label="停止生成"><svg class="g-icon" aria-hidden="true"><use href="#i-stop"/></svg></button></div></div>
+            <div><span class="g-label g-muted">发送失败</span><div class="g-composer ds-static" data-state="failed"><span class="g-composer-input ds-fake-input">帮我回复周华</span><button class="g-icon-button" type="submit" form="ds-none" aria-label="发送"><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div><div class="g-composer-feedback"><p class="g-hint g-hint--error g-feedback"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg><span><strong>错误：</strong>网络中断，消息未发送。</span></p><button class="g-btn g-btn--primary" type="button" data-sample-action>重试</button></div></div>
+            <div><span class="g-label g-muted">发送失败 · 焦点仍在输入框（带“+”）</span><div class="g-composer ds-static ds-focus" data-state="failed"><button class="g-icon-button" type="button" aria-label="添加附件"><svg class="g-icon" aria-hidden="true"><use href="#i-plus"/></svg></button><span class="g-composer-input ds-fake-input">帮我回复周华</span><button class="g-icon-button" type="submit" form="ds-none" aria-label="发送"><svg class="g-icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div><div class="g-composer-feedback"><p class="g-hint g-hint--error g-feedback"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg><span><strong>错误：</strong>网络中断，消息未发送。内容已保留。</span></p><button class="g-btn g-btn--primary" type="button" data-sample-action>重试</button></div></div>
+          </div>
+          <p class="g-label g-muted ds-note">失败与输入错误同形：底部 3px 双线 + 下方“错误：”提示，不加外框；焦点框只有一层。没有“+”时，文字左侧保留 12px。</p>
         </div>
-        <div class="g-prose"><h3 class="g-title">输入区与消息使用相同的视觉语言</h3><p class="g-detail g-secondary">空闲时与页面融为一体；编辑时出现浅底，键盘焦点保持可见。发送按钮使用线性图标，沿用 44px 点击区域。</p><p class="g-label g-muted">消息：g-thread / g-message / g-byline<br>内容：g-content / g-content-head / g-prose<br>输入：g-composer / g-composer-input</p></div>
+        <div class="g-prose"><h3 class="g-title">输入区与消息使用相同的视觉语言</h3><p class="g-detail g-secondary">空闲时与页面融为一体；编辑时出现浅底，焦点框包住整个输入区。发送键可用时为主要文字色，不可用时为禁用色；发送中显示加载，代理生成时换成实心“停止生成”，失败时输入区底部改为与输入错误相同的双线（不再加外框，不会和焦点框叠成双框），输入框设 aria-invalid，下方给出“错误：”提示与“重试”。没有“+”按钮时，输入区左侧保留 12px 内距。</p><p class="g-label g-muted">消息：g-thread / g-message / g-byline<br>内容：g-content / g-content-head / g-prose<br>输入：g-composer / g-composer-input / g-composer-stop<br>状态：data-state="sending | running | failed"</p></div>
+      </div>
+
+      <div class="ds-subhead ds-block-start"><h3 class="g-title">状态与反馈</h3><span class="g-label g-muted">运行 · 完成 · 失败 · 危险 · 聆听</span></div>
+      <p class="g-detail g-secondary ds-component-note">灰阶之内表达状态：形状（圆环 / 实心点 / 叉形、双线、外框）、字重、图标与文字同时变化。失败与危险不依赖颜色，也不只靠更深的灰。</p>
+      <div class="ds-component-grid">
+        <div><div class="ds-subhead"><h3 class="g-title">运行时间线</h3><span class="g-label g-muted">g-timeline-item[data-status]</span></div>
+          <ol class="g-timeline" aria-label="代理运行步骤示例">
+            <li class="g-timeline-item" data-status="done"><p class="g-title">读取收件箱</p><p class="g-timeline-status"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-check"/></svg>已完成</p><p class="g-detail g-secondary">找到 3 封与 Q2 评审相关的邮件。</p></li>
+            <li class="g-timeline-item" data-status="running"><p class="g-title">起草回复</p><p class="g-timeline-status"><span class="g-spinner" aria-hidden="true"></span>进行中</p><p class="g-detail g-secondary">正在整理三件最重要的事。</p></li>
+            <li class="g-timeline-item" data-status="failed"><p class="g-title">发送给周华</p><p class="g-timeline-status"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg>失败</p><p class="g-detail g-secondary">错误：邮件服务拒绝连接，邮件未发出。</p><div class="g-actions g-actions--text"><button class="g-btn g-btn--primary" type="button" data-sample-action>重试发送</button><button class="g-btn" type="button" data-sample-action>查看详情</button></div></li>
+          </ol>
+        </div>
+        <div><div class="ds-subhead"><h3 class="g-title">提示、危险操作与聆听</h3></div>
+          <div class="ds-toast-demos">
+            <div class="g-toast show" role="status">草稿已保存</div>
+            <div class="g-toast show" data-tone="error" role="alert"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg><span><strong>发送失败：</strong>网络中断，邮件未发出。</span></div>
+          </div>
+          <p class="g-label g-muted ds-note">失败提示使用 role="alert"、白底外框和警示图标，不自动消失。</p>
+          <div class="g-actions ds-danger-demo"><button class="g-btn g-btn--danger" type="button" id="dangerDemo" aria-haspopup="dialog"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg>删除这段对话</button><button class="g-btn g-btn--danger" type="button" disabled><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg>删除（不可用）</button></div>
+          <div class="ds-hint-pair" aria-label="错误与警告对比">
+            <div><span class="g-label g-muted">错误 · g-hint--error</span><p class="g-hint g-hint--error g-feedback"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg><span><strong>错误：</strong>邮件服务拒绝连接，邮件未发出。</span></p></div>
+            <div><span class="g-label g-muted">警告 · g-hint--warning</span><p class="g-hint g-hint--warning g-feedback"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-warning"/></svg><span><strong>不可撤回：</strong>对话与其中的草稿会被永久删除。</span></p></div>
+          </div>
+          <p class="g-label g-muted ds-note">错误＝已经出了问题（三角图标，整句主要文字色）；警告＝还没出错但后果不可逆（菱形图标 + 左侧 2px 粗线，只有加粗短语用主要文字色）。</p>
+          <div class="ds-wave-demos">
+            <div class="g-wave-status"><div class="g-wave" id="waveLive" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><span id="waveStatus" role="status">已暂停</span><button class="g-btn" type="button" id="waveToggle" aria-pressed="false">开始聆听</button></div>
+            <div class="ghost-ui reduce-motion g-wave-status"><div class="g-wave playing" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><span>正在聆听…</span><span class="g-label g-muted">减少动态效果下</span></div>
+            <div class="ghost-ui reduce-motion g-wave-status"><div class="g-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><span>已暂停</span><span class="g-label g-muted">减少动态效果下</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="ds-component-grid ds-block-start ds-run-detail">
+        <div><div class="ds-subhead"><h3 class="g-title">运行详情 · 工具调用</h3><span class="g-label g-muted">g-tool[data-status]</span></div>
+          <div class="g-prose">
+            <details class="g-disclosure g-tool" data-status="completed"><summary><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-chevron"/></svg><span class="g-tool-name">read_inbox</span><span class="g-tag"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-check"/></svg>已完成</span></summary><div class="g-disclosure-body"><div class="g-prose"><p class="g-label g-muted">结果</p><pre class="g-code">找到 3 封相关邮件</pre></div></div></details>
+            <details class="g-disclosure g-tool" data-status="failed" open><summary><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-chevron"/></svg><span class="g-tool-name">send_email</span><span class="g-tag"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg>失败</span></summary><div class="g-disclosure-body"><div class="g-prose"><p class="g-label g-muted">参数</p><pre class="g-code">{ "to": "zhouhua@example.com" }</pre></div><p class="g-hint g-hint--error g-feedback"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg><span><strong>错误：</strong>邮件服务拒绝连接，邮件未发出。</span></p></div></details>
+            <details class="g-disclosure g-tool" data-status="interrupted" open><summary><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-chevron"/></svg><span class="g-tool-name">search_calendar</span><span class="g-tag"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-stop"/></svg>已中断</span></summary><div class="g-disclosure-body"><div class="g-prose"><p class="g-label g-muted">参数</p><pre class="g-code">{ "range": "本周" }</pre></div><p class="g-hint">你停止了生成，这次调用没有返回结果。</p></div></details>
+          </div>
+        </div>
+        <div><div class="ds-subhead"><h3 class="g-title">运行详情 · 停止的回复</h3><span class="g-label g-muted">g-assistant-part[data-status]</span></div>
+          <div class="g-prose">
+            <div class="g-assistant-part" data-status="abandoned"><p class="g-assistant-status"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-stop"/></svg>已停止生成</p><div class="g-text g-message-copy">好的，我先把三件最重要的事整理一下：第一，内核模块迁移需要在</div></div>
+            <div class="g-assistant-part" data-status="interrupted"><p class="g-assistant-status"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-stop"/></svg>已中断</p><div class="g-text g-message-copy">正在查找周华本周的空闲时间……</div></div>
+          </div>
+          <p class="g-label g-muted ds-note">失败、中断与停止不只靠更浅或更深的灰：工具标签加外框（实线＝失败，虚线＝已中断）、600 字重、图标和文字，展开区左线改为虚线；停止或中断的回复前置“已停止生成 / 已中断”并加虚线左线。</p>
+        </div>
       </div>
     </section>
 
     <section id="composition" class="ds-section" aria-labelledby="composition-title">
-      <header class="ds-section-head"><div><p class="ds-overline">03 / COMPOSITION</p><h2 id="composition-title" class="g-page-title">内容变化，规则不变。</h2></div><p class="g-label g-muted">为生成式内容准备的一套组合语法。</p></header>
+      <header class="ds-section-head"><div><p class="ds-overline">03 / 组合</p><h2 id="composition-title" class="g-page-title">内容变化，规则不变。</h2></div><p class="g-label g-muted">为生成式内容准备的一套组合语法。</p></header>
       <p class="g-text g-secondary ds-section-description">标题、正文、数据和操作共用基础组件。调整下面的内容与容器，检查不同组合下的层级、间距与换行。</p>
       <div class="ds-lab">
         <form class="ds-lab-controls" id="compositionControls">
@@ -142,14 +202,14 @@
           <label class="g-check ds-guide-check"><input id="guideControl" type="checkbox">显示模块边界</label>
           <button class="g-btn g-btn--quiet" type="reset">恢复默认</button>
         </form>
-        <div class="ds-lab-stage"><div class="ds-stage-label"><span class="ds-overline">LIVE SPECIMEN</span><span id="previewSize" class="g-label g-muted"></span></div><div id="previewWidth" class="ds-preview-width"><article id="compositionPreview" class="g-content" data-surface="plain" aria-label="内容组合预览"></article></div><p class="g-label g-muted ds-stage-foot">无额外内边距 · 模块间距 12 · 标题组间距 8</p><span id="compositionStatus" class="g-sr-only" role="status" aria-live="polite"></span></div>
+        <div class="ds-lab-stage"><div class="ds-stage-label"><span class="ds-overline">实时样本</span><span id="previewSize" class="g-label g-muted"></span></div><div id="previewWidth" class="ds-preview-width"><article id="compositionPreview" class="g-content" data-surface="plain" aria-label="内容组合预览"></article></div><p class="g-label g-muted ds-stage-foot">无额外内边距 · 模块间距 12 · 标题组间距 8</p><span id="compositionStatus" class="g-sr-only" role="status" aria-live="polite"></span></div>
       </div>
       <div class="ds-composition-rules"><div><span class="ds-index">A</span><h3 class="g-title">默认融入阅读</h3><p class="g-label g-muted">无边界内容 + 文字操作。确有分组需要时选择浅底或边框，同一区块只使用一层表面。</p></div><div><span class="ds-index">B</span><h3 class="g-title">留白形成秩序</h3><p class="g-label g-muted">标题组 8、模块之间 12、消息之间 40。模块缺失时收起空位，长内容自然换行与增高。</p></div><div><span class="ds-index">C</span><h3 class="g-title">生成内容复用组件</h3><p class="g-label g-muted">只选择模块与已有变体；不临时增加字号、颜色、阴影或按钮样式。实心确认保留给独立操作区域。</p></div></div>
       <details class="ds-code-details"><summary>查看当前组合的 HTML <svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="ds-code-toolbar"><span class="g-label g-muted">使用 tokens.css + components.css</span><button id="copyComposition" type="button" class="g-btn g-btn--quiet">复制 HTML</button></div><pre><code id="compositionCode"></code></pre></details>
     </section>
 
     <section id="handoff" class="ds-section" aria-labelledby="handoff-title">
-      <header class="ds-section-head"><div><p class="ds-overline">04 / HANDOFF</p><h2 id="handoff-title" class="g-page-title">让规范成为可以使用的东西。</h2></div><p class="g-label g-muted">基础样式与展示页分离，便于继续迭代。</p></header>
+      <header class="ds-section-head"><div><p class="ds-overline">04 / 交付</p><h2 id="handoff-title" class="g-page-title">让规范成为可以使用的东西。</h2></div><p class="g-label g-muted">基础样式与展示页分离，便于继续迭代。</p></header>
       <div class="ds-handoff-grid"><div><h3 class="g-title">可复用的样式</h3><p class="g-text g-secondary">加载基础变量和组件样式，在页面容器上添加 <code>.ghost-ui</code>。展示页的目录、网格和说明样式独立存放。</p><div class="g-actions ds-downloads"><a href="tokens.css" download class="g-btn"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-download"/></svg>基础变量</a><a href="components.css" download class="g-btn">组件样式</a><a href="tokens.json" download class="g-btn g-btn--quiet">JSON 变量</a></div></div><div class="ds-usage"><pre><code>&lt;link rel="stylesheet" href="tokens.css"&gt;
 &lt;link rel="stylesheet" href="components.css"&gt;
 
@@ -163,12 +223,14 @@
   &lt;/article&gt;
 &lt;/main&gt;</code></pre></div></div>
       <div class="ds-contract ds-block-start"><h3 class="g-title">页面接入约束</h3><dl class="g-kv"><div><dt>基础变量</dt><dd>颜色、字号、字重和间距只在 tokens.css 定义，JSON 同步导出。</dd></div><div><dt>公共组件</dt><dd>文字、内容块、操作、消息和输入区使用 g-* 类，变体在 components.css 维护。</dd></div><div><dt>页面样式</dt><dd>只负责布局与定位。若多个页面需要同一视觉调整，回到公共组件修改。</dd></div><div><dt>视觉验证</dt><dd>原稿内容样本与组合预览共用公共组件；在 320 / 390px 宽度检查长文、换行和操作状态。</dd></div></dl></div>
-      <div class="ds-contract ds-block-start"><h3 class="g-title">应用组件接入</h3><dl class="g-kv"><div><dt>内容与操作</dt><dd>g-prose--list 排列无编号详情；g-prose-label / g-prose-copy 保持行内标签；g-btn--annotation 用于附件和辅助操作。</dd></div><div><dt>导航与旅程</dt><dd>g-nav / g-nav-item 使用图标、文字与选中圆点；g-timeline-item 使用细线和固定间距组织时间条目。</dd></div><div><dt>局部弹层</dt><dd>g-overlay + g-sheet--contained 复用弹层表面，容纳在应用视口中；g-list-action 复用文字操作和列表分隔。</dd></div><div><dt>状态反馈</dt><dd>g-toast 使用浅底与辅助字号；g-wave 复用灰阶和间距，语音示意动效为 700ms，并跟随减少动态效果设置。</dd></div></dl></div>
-      <div class="ds-release-note"><span class="g-tag">0.2 / Light</span><p class="g-label g-muted">本版修订默认层级、操作强度与容器规则，并补充消息、段落与输入区组件。首页排版样本与组合预览直接使用同一套样式。</p></div>
+      <div class="ds-contract ds-block-start"><h3 class="g-title">应用组件接入</h3><dl class="g-kv"><div><dt>内容与操作</dt><dd>g-prose--list 排列无编号详情；g-prose-label / g-prose-copy 保持行内标签；g-btn--annotation 用于附件和辅助操作。</dd></div><div><dt>导航与旅程</dt><dd>g-nav / g-nav-item 使用图标、文字与选中圆点；g-timeline-item 使用细线和固定间距组织时间条目，data-status="running | done | failed" 对应圆环 / 实心点 / 叉形标记，并配 g-timeline-status 可见文字。</dd></div><div><dt>运行详情</dt><dd>g-tool 的 data-status="failed | interrupted" 时，标签内必须有图标和文字（#i-alert + “失败”，#i-stop + “已中断”），标签加外框（实线 / 虚线）；g-assistant-part 的 data-status="abandoned | interrupted" 时，内容前放 g-assistant-status（#i-stop + “已停止生成” / “已中断”）。</dd></div><div><dt>局部弹层</dt><dd>g-overlay + g-sheet--contained 复用弹层表面，容纳在应用视口中；g-list-action 复用文字操作和列表分隔。</dd></div><div><dt>状态反馈</dt><dd>g-toast 使用浅底与辅助字号，失败用 data-tone="error"（白底外框 + 警示图标 + role="alert"）；g-wave 静止时为禁用灰、聆听时为主要文字色，动效 700ms 并跟随减少动态效果设置，旁边必须有 role="status" 的可见文字。</dd></div><div><dt>错误与危险</dt><dd>错误提示用 g-hint--error（12 / 20，以“错误：”开头，#i-alert）；输入错误为双线下划线；危险操作用 g-btn--danger（细边框、600 字重、警示图标），并在独立弹层中最终确认。不可撤回等提醒用 g-hint--warning（#i-warning 菱形 + 左侧 2px 粗线 + 加粗开头），不要套用 g-hint--error。输入区发送失败用 data-state="failed"（底部双线，不加外框）并给输入框设 aria-invalid="true"。</dd></div></dl></div>
+      <div class="ds-release-note"><span class="g-tag">0.4 / Light</span><p class="g-label g-muted">0.4：新增独立的警告样式 g-hint--warning（不新增颜色），“不可撤回”改用警告；输入区失败态改为与输入错误一致的双线，不再与焦点框叠成双框，并补齐无“+”时的左内距；工具调用失败 / 中断与停止的回复增加外框、虚线、图标与文字。<br>0.3：补充错误、失败与危险状态（不新增颜色），标题与重点操作改用 600 字重，标签字号提升到 12px，输入区增加发送中 / 停止 / 失败状态，并修正悬停对比、标签页点击宽度与用户消息对齐。</p></div>
     </section>
     <footer class="ds-footer"><a href="#overview" class="ds-footer-brand"><svg class="g-mark" aria-hidden="true"><use href="#ghost-mark"/></svg><span>ghost</span></a><p class="g-label g-muted">留一点空间，给内容，也给人。</p><a href="#overview" class="ds-text-link">回到顶部 ↑</a></footer>
   </main>
   <dialog class="g-sheet" id="demoSheet" aria-labelledby="sheetTitle" aria-describedby="sheetDescription"><div class="g-sheet-handle" aria-hidden="true"></div><div class="g-sheet-head"><h2 id="sheetTitle" class="g-title">给内容一个独立的空间</h2><button type="button" class="g-icon-button" id="closeSheet" aria-label="关闭弹层"><svg class="g-icon" aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="g-sheet-body"><p id="sheetDescription" class="g-text g-secondary">浅遮罩、圆润的上沿，以及清楚的标题与操作。焦点保留在弹层中，关闭后回到原来的按钮。</p><dl class="g-kv"><div><dt>内边距</dt><dd>24px</dd></div><div><dt>圆角</dt><dd>20px</dd></div><div><dt>出现动效</dt><dd>180ms · 位移 8px</dd></div></dl><button type="button" class="g-btn g-btn--solid" id="confirmSheet">知道了</button></div></dialog>
+  <dialog class="g-sheet" id="confirmSendSheet" aria-labelledby="confirmSendTitle" aria-describedby="confirmSendDescription confirmSendWarning"><div class="g-sheet-handle" aria-hidden="true"></div><div class="g-sheet-head"><h2 id="confirmSendTitle" class="g-title">确认发送给周华？</h2><button type="button" class="g-icon-button" data-close-sheet aria-label="关闭"><svg class="g-icon" aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="g-sheet-body"><p id="confirmSendDescription" class="g-text g-secondary">邮件“Q2 迭代架构权衡及工期共识”将从你的邮箱发出。</p><p id="confirmSendWarning" class="g-hint g-hint--warning g-feedback"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-warning"/></svg><span><strong>不可撤回：</strong>发出后无法撤回或修改。</span></p><dl class="g-kv"><div><dt>收件人</dt><dd>周华</dd></div><div><dt>附件</dt><dd>Q2 架构评审附件.pdf</dd></div></dl><div class="g-actions"><button type="button" class="g-btn g-btn--solid" data-close-sheet data-toast="演示：已确认发送"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-arrow"/></svg>发送</button><button type="button" class="g-btn" data-close-sheet>取消</button></div></div></dialog>
+  <dialog class="g-sheet" id="confirmDangerSheet" aria-labelledby="confirmDangerTitle" aria-describedby="confirmDangerDescription"><div class="g-sheet-handle" aria-hidden="true"></div><div class="g-sheet-head"><h2 id="confirmDangerTitle" class="g-title">删除这段对话？</h2><button type="button" class="g-icon-button" data-close-sheet aria-label="关闭"><svg class="g-icon" aria-hidden="true"><use href="#i-close"/></svg></button></div><div class="g-sheet-body"><p id="confirmDangerDescription" class="g-hint g-hint--warning g-feedback"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-warning"/></svg><span><strong>不可撤回：</strong>对话与其中的草稿会被永久删除。</span></p><div class="g-actions"><button type="button" class="g-btn g-btn--solid" data-close-sheet data-toast="演示：已确认删除"><svg class="g-icon g-icon--small" aria-hidden="true"><use href="#i-alert"/></svg>删除</button><button type="button" class="g-btn" data-close-sheet>取消</button></div></div></dialog>
   <div id="toast" class="ds-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>

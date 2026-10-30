@@ -1,4 +1,4 @@
-/* Ghost design system · 0.2 · Light
+/* Ghost design system · 0.4 · Light
    Load before components.css. All public tokens use the --ghost- prefix. */
 :root {
   color-scheme: light;
@@ -32,14 +32,16 @@
   --ghost-type-body-line: 28px;
   --ghost-type-detail-size: 13px;
   --ghost-type-detail-line: 26px;
-  --ghost-type-label-size: 11px;
+  --ghost-type-label-size: 12px;
   --ghost-type-label-line: 18px;
   --ghost-type-control-size: 12px;
   --ghost-type-control-line: 20px;
   --ghost-type-metric-size: 20px;
   --ghost-type-metric-line: 28px;
+  --ghost-type-touch-input-size: 16px;
   --ghost-weight-regular: 400;
   --ghost-weight-medium: 500;
+  --ghost-weight-strong: 600;
   --ghost-brand-size: 23px;
   --ghost-brand-line: 32px;
   --ghost-brand-weight: 700;
@@ -56,7 +58,7 @@
   /* Semantic rhythm: composition uses these tokens, never local spacing. */
   --ghost-content-gap: var(--ghost-space-3);
   --ghost-heading-gap: var(--ghost-space-2);
-  --ghost-prose-gap: var(--ghost-space-2);
+  --ghost-prose-gap: var(--ghost-space-3);
   --ghost-message-gap: var(--ghost-space-10);
   --ghost-message-inset: var(--ghost-space-6);
   --ghost-surface-inset: var(--ghost-space-4);
@@ -64,14 +66,24 @@
   --ghost-radius-control: 8px;
   --ghost-radius-content: 12px;
   --ghost-radius-sheet: 20px;
+  --ghost-border-width: 1px;
+  --ghost-border-width-strong: 2px;
+  --ghost-focus-width: 2px;
+  --ghost-focus-offset: 3px;
   --ghost-control-height: 44px;
   --ghost-icon-small: 16px;
   --ghost-icon-default: 20px;
+  --ghost-mark-size: 32px;
   --ghost-stroke: 1.5;
   --ghost-content-measure: 36rem;
+  --ghost-textarea-min-height: 104px;
+  --ghost-code-max-height: 320px;
+  --ghost-sheet-width: 480px;
+  --ghost-sheet-max-height: 85dvh;
   --ghost-duration-fast: 120ms;
   --ghost-duration-base: 180ms;
   --ghost-duration-listening: 700ms;
+  --ghost-duration-spin: 800ms;
   --ghost-ease: cubic-bezier(.2, .8, .2, 1);
   --ghost-shadow-overlay: 0 16px 48px rgb(0 0 0 / 12%);
 }

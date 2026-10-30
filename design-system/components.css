@@ -1,4 +1,4 @@
-/* Public components. Prefix g-. Scope inherited defaults with .ghost-ui. */
+/* Ghost components · 0.4. Prefix g-. Scope inherited defaults with .ghost-ui. */
 .ghost-ui {
   box-sizing: border-box;
   font-family: var(--ghost-font-sans);
@@ -13,12 +13,14 @@
 :where(.ghost-ui) :where(button, input, select, textarea) { font: inherit; }
 .ghost-ui button, .ghost-ui a, .ghost-ui input, .ghost-ui select, .ghost-ui textarea { -webkit-tap-highlight-color: transparent; }
 .ghost-ui :is(button, a, input, select, textarea, summary):focus-visible {
-  outline: 2px solid var(--ghost-focus-ring);
-  outline-offset: 3px;
+  outline: var(--ghost-focus-width) solid var(--ghost-focus-ring);
+  outline-offset: var(--ghost-focus-offset);
 }
 .g-page-title, .g-title, .g-text, .g-detail, .g-label { margin: 0; overflow-wrap: anywhere; }
 .g-page-title { font-size: var(--ghost-type-page-size); line-height: var(--ghost-type-page-line); font-weight: var(--ghost-weight-regular); }
-.g-title { font-size: var(--ghost-type-title-size); line-height: var(--ghost-type-title-line); font-weight: var(--ghost-weight-regular); }
+.g-title { font-size: var(--ghost-type-title-size); line-height: var(--ghost-type-title-line); font-weight: var(--ghost-weight-strong); }
+/* Titles always use the primary text colour so a heading never reads lighter than its body. */
+.g-title:is(.g-secondary, .g-muted) { color: var(--ghost-text-primary); }
 .g-text { font-size: var(--ghost-type-body-size); line-height: var(--ghost-type-body-line); }
 .g-detail { font-size: var(--ghost-type-detail-size); line-height: var(--ghost-type-detail-line); }
 .g-label { font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-label-line); }
@@ -26,7 +28,7 @@
 .g-muted { color: var(--ghost-text-muted); }
 .g-icon { width: var(--ghost-icon-default); height: var(--ghost-icon-default); display: block; flex: none; fill: none; stroke: currentColor; stroke-width: var(--ghost-stroke); stroke-linecap: round; stroke-linejoin: round; }
 .g-icon--small { width: var(--ghost-icon-small); height: var(--ghost-icon-small); }
-.g-mark { width: 32px; height: 32px; display: block; flex: none; }
+.g-mark { width: var(--ghost-mark-size); height: var(--ghost-mark-size); display: block; flex: none; }
 .g-brand { display: flex; align-items: center; gap: var(--ghost-space-1); }
 .g-wordmark { font: var(--ghost-brand-weight) var(--ghost-brand-size)/var(--ghost-brand-line) var(--ghost-font-brand); letter-spacing: var(--ghost-brand-tracking); }
 .g-brand > .g-label { margin-left: var(--ghost-space-2); }
@@ -42,8 +44,14 @@
 }
 .g-btn:hover, .g-btn[data-state="hover"], .g-icon-button:hover { background: var(--ghost-state-hover); }
 .g-btn:active, .g-btn[data-state="pressed"], .g-icon-button:active { background: var(--ghost-state-pressed); }
-.g-btn--primary { color: var(--ghost-text-primary); font-weight: var(--ghost-weight-medium); }
+/* Hover and pressed never rely on the faint background alone: text rises to primary (≥12.67:1 on hover/pressed). */
+.g-btn:not(.g-btn--solid, :disabled, [aria-disabled="true"], [aria-busy="true"]):is(:hover, :active, [data-state="hover"], [data-state="pressed"]),
+.g-icon-button:not(:disabled):is(:hover, :active) { color: var(--ghost-text-primary); }
+/* Primary text action: strong weight (600 survives Microsoft YaHei, which has no 500) and a leading icon in markup. */
+.g-btn--primary { color: var(--ghost-text-primary); font-weight: var(--ghost-weight-strong); }
 .g-btn--quiet { color: var(--ghost-text-muted); }
+/* Destructive or failure-recovery action. No colour: outlined shape, strong weight, and an #i-alert icon in markup. */
+.g-btn--danger { padding-inline: var(--ghost-space-4); border: var(--ghost-border-width) solid var(--ghost-text-primary); color: var(--ghost-text-primary); font-weight: var(--ghost-weight-strong); }
 /* Filled actions are opt-in, for confirmation in a separate sheet or form. */
 .g-btn--solid { padding-inline: var(--ghost-space-4); background: var(--ghost-action-default); color: var(--ghost-text-inverse); }
 .g-btn--solid:hover, .g-btn--solid[data-state="hover"] { background: var(--ghost-action-hover); }
@@ -53,10 +61,12 @@
   color: var(--ghost-text-disabled); background: transparent; border-color: transparent; cursor: default;
 }
 .g-btn--solid:disabled, .g-btn--solid[aria-disabled="true"] { background: var(--ghost-bg-subtle); }
+.g-btn--danger:disabled, .g-btn--danger[aria-disabled="true"] { border-color: var(--ghost-border-subtle); }
 .g-btn[aria-busy="true"] { color: var(--ghost-text-secondary); background: transparent; cursor: progress; }
+.g-btn--primary[aria-busy="true"], .g-btn--danger[aria-busy="true"] { color: var(--ghost-text-primary); }
 .g-btn--solid[aria-busy="true"] { color: var(--ghost-text-inverse); background: var(--ghost-action-default); }
-.g-btn[data-state="focus"] { outline: 2px solid var(--ghost-focus-ring); outline-offset: 3px; }
-.g-spinner { width: 16px; height: 16px; display: inline-block; flex: none; border: 1.5px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: g-spin 800ms linear infinite; }
+.g-btn[data-state="focus"] { outline: var(--ghost-focus-width) solid var(--ghost-focus-ring); outline-offset: var(--ghost-focus-offset); }
+.g-spinner { width: var(--ghost-icon-small); height: var(--ghost-icon-small); display: inline-block; flex: none; border: calc(var(--ghost-stroke) * 1px) solid currentColor; border-right-color: transparent; border-radius: 50%; animation: g-spin var(--ghost-duration-spin) linear infinite; }
 @keyframes g-spin { to { transform: rotate(360deg); } }
 .g-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ghost-space-2); }
 .g-actions--text { margin-inline: calc(-1 * var(--ghost-action-inset)); row-gap: 0; }
@@ -64,36 +74,44 @@
 .g-field > label { font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); font-weight: var(--ghost-weight-regular); }
 .g-input, .g-select {
   width: 100%; min-width: 0; min-height: var(--ghost-control-height); padding: var(--ghost-space-2) 0;
-  border: 0; border-bottom: 1px solid var(--ghost-border-control); border-radius: 0;
+  border: 0; border-bottom: var(--ghost-border-width) solid var(--ghost-border-control); border-radius: 0;
   color: var(--ghost-text-primary); background: transparent;
   font-size: var(--ghost-type-body-size); line-height: var(--ghost-type-title-line);
 }
 .g-input::placeholder { color: var(--ghost-text-muted); opacity: 1; }
-textarea.g-input { min-height: 104px; resize: vertical; }
+textarea.g-input { min-height: var(--ghost-textarea-min-height); resize: vertical; }
 .g-input:hover:not(:disabled), .g-select:hover:not(:disabled) { border-color: var(--ghost-text-secondary); }
 .g-input:disabled, .g-select:disabled { border-color: var(--ghost-border-subtle); color: var(--ghost-text-disabled); }
-.g-input[aria-invalid="true"] { border-bottom: 2px solid var(--ghost-text-primary); padding-bottom: 7px; }
-.g-hint { margin: 0; color: var(--ghost-text-muted); font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-label-line); }
+/* Error is a different line shape (double rule), not just a darker one; pair it with .g-hint--error. */
+.g-input[aria-invalid="true"], .g-input[aria-invalid="true"]:hover { border-bottom: calc(var(--ghost-border-width) * 3) double var(--ghost-text-primary); padding-bottom: calc(var(--ghost-space-2) - var(--ghost-border-width) * 2); }
+.g-hint { margin: 0; color: var(--ghost-text-muted); font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); }
+/* Error hint: 12/20, primary text, copy starts with “错误：” (in a <strong>) or the concrete failure, and uses #i-alert. */
+.g-hint--error { color: var(--ghost-text-primary); font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); }
+.g-hint--error strong, .g-toast[data-tone="error"] strong, .g-status[data-tone="error"] strong { font-weight: var(--ghost-weight-strong); }
+/* Warning (consequential or irreversible, not a failure) has its own shape: a 2px leading rule, the #i-warning diamond
+   (never the #i-alert triangle, which is reserved for errors) and a strong lead-in such as “不可撤回：”; the rest stays secondary. */
+.g-hint--warning, .g-hint--warning.g-feedback { padding-inline-start: var(--ghost-space-3); border-inline-start: var(--ghost-border-width-strong) solid var(--ghost-text-primary); color: var(--ghost-text-secondary); font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); }
+.g-hint--warning strong { color: var(--ghost-text-primary); font-weight: var(--ghost-weight-strong); }
 .g-feedback { display: flex; align-items: flex-start; gap: var(--ghost-space-2); color: var(--ghost-text-primary); }
-.g-check { display: flex; gap: var(--ghost-space-2); align-items: center; min-height: var(--ghost-control-height); font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-label-line); cursor: pointer; }
-.g-check input { width: 16px; height: 16px; margin: 0; accent-color: var(--ghost-action-default); flex: none; }
+.g-check { display: flex; gap: var(--ghost-space-2); align-items: center; min-height: var(--ghost-control-height); font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); cursor: pointer; }
+.g-check input { width: var(--ghost-icon-small); height: var(--ghost-icon-small); margin: 0; accent-color: var(--ghost-action-default); flex: none; }
 .g-tag { display: inline-flex; align-items: center; gap: var(--ghost-space-1); font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-label-line); color: var(--ghost-text-muted); }
 .g-tag--surface { padding: var(--ghost-space-1) var(--ghost-space-2); border-radius: var(--ghost-radius-control); background: var(--ghost-bg-subtle); }
-.g-divider { margin: 0; border: 0; border-top: 1px solid var(--ghost-border-subtle); }
-.g-separator { width: 1px; height: var(--ghost-space-3); background: var(--ghost-border-subtle); flex: none; }
+.g-divider { margin: 0; border: 0; border-top: var(--ghost-border-width) solid var(--ghost-border-subtle); }
+.g-separator { width: var(--ghost-border-width); height: var(--ghost-space-3); background: var(--ghost-border-subtle); flex: none; }
 .g-list { display: grid; }
-.g-list-row { display: flex; align-items: center; gap: var(--ghost-space-3); padding: var(--ghost-space-4) 0; min-width: 0; border-bottom: 1px solid var(--ghost-border-subtle); }
+.g-list-row { display: flex; align-items: center; gap: var(--ghost-space-3); padding: var(--ghost-space-4) 0; min-width: 0; border-bottom: var(--ghost-border-width) solid var(--ghost-border-subtle); }
 .g-list-row:last-child { border-bottom: 0; }
 .g-list-row > .g-list-copy { flex: 1; min-width: 0; display: grid; gap: var(--ghost-space-1); }
-.g-tabs { display: flex; align-items: stretch; border-bottom: 1px solid var(--ghost-border-subtle); gap: var(--ghost-space-6); }
-.g-tab { position: relative; min-height: var(--ghost-control-height); padding: var(--ghost-space-2) 0; border: 0; background: transparent; color: var(--ghost-text-muted); font-size: var(--ghost-type-control-size); cursor: pointer; }
+.g-tabs { display: flex; align-items: stretch; border-bottom: var(--ghost-border-width) solid var(--ghost-border-subtle); gap: var(--ghost-space-4); }
+.g-tab { position: relative; min-height: var(--ghost-control-height); min-width: var(--ghost-control-height); padding: var(--ghost-space-2) var(--ghost-space-2); border: 0; background: transparent; color: var(--ghost-text-muted); font-size: var(--ghost-type-control-size); cursor: pointer; }
 .g-tab:hover { color: var(--ghost-text-primary); }
 .g-tab[aria-selected="true"] { color: var(--ghost-text-primary); font-weight: var(--ghost-weight-medium); }
-.g-tab[aria-selected="true"]::after { content: ""; position: absolute; height: 1px; inset: auto 0 -1px; background: currentColor; }
+.g-tab[aria-selected="true"]::after { content: ""; position: absolute; height: var(--ghost-border-width); inset: auto 0 calc(-1 * var(--ghost-border-width)); background: currentColor; }
 /* Unframed by default. Surfaces are explicit, optional grouping treatments. */
 .g-content { display: grid; gap: var(--ghost-content-gap); min-width: 0; max-width: var(--ghost-content-measure); overflow-wrap: anywhere; }
 .g-content[data-surface="subtle"] { padding: var(--ghost-surface-inset); border-radius: var(--ghost-radius-content); background: var(--ghost-bg-subtle); }
-.g-content[data-surface="outline"] { padding: var(--ghost-surface-inset); border-radius: var(--ghost-radius-content); border: 1px solid var(--ghost-border-subtle); }
+.g-content[data-surface="outline"] { padding: var(--ghost-surface-inset); border-radius: var(--ghost-radius-content); border: var(--ghost-border-width) solid var(--ghost-border-subtle); }
 .g-content-head { display: grid; gap: var(--ghost-heading-gap); }
 .g-prose { display: grid; gap: var(--ghost-prose-gap); min-width: 0; }
 .g-prose--list { margin: 0; padding: 0; list-style: none; }
@@ -101,56 +119,91 @@ textarea.g-input { min-height: 104px; resize: vertical; }
 .g-prose-label, .g-prose-copy { display: inline; }
 .g-prose-label::after { content: "："; }
 .g-kv { margin: 0; display: grid; gap: var(--ghost-space-2); }
-.g-kv > div { display: grid; grid-template-columns: minmax(64px, 1fr) minmax(0, 2fr); gap: var(--ghost-space-4); }
+.g-kv > div { display: grid; grid-template-columns: minmax(calc(var(--ghost-space-8) * 2), 1fr) minmax(0, 2fr); gap: var(--ghost-space-4); }
 .g-kv dt { color: var(--ghost-text-muted); font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-title-line); }
 .g-kv dd { margin: 0; color: var(--ghost-text-secondary); font-size: var(--ghost-type-detail-size); line-height: var(--ghost-type-title-line); overflow-wrap: anywhere; }
 .g-metric { display: flex; flex-wrap: wrap; gap: var(--ghost-space-2); align-items: baseline; }
 .g-metric strong { font-size: var(--ghost-type-metric-size); line-height: var(--ghost-type-metric-line); font-weight: var(--ghost-weight-regular); font-variant-numeric: tabular-nums; }
-.g-media { width: 100%; aspect-ratio: 16 / 9; display: grid; place-items: center; background: var(--ghost-bg-subtle); border: 1px solid var(--ghost-border-subtle); border-radius: var(--ghost-radius-control); color: var(--ghost-text-muted); }
-.g-sheet { position: fixed; inset: auto 0 0; margin: 0 auto; width: min(480px, 100%); max-height: 85dvh; overflow: auto; padding: var(--ghost-space-6); border: 0; border-radius: var(--ghost-radius-sheet) var(--ghost-radius-sheet) 0 0; background: var(--ghost-bg-surface); color: var(--ghost-text-primary); box-shadow: var(--ghost-shadow-overlay); }
+.g-media { width: 100%; aspect-ratio: 16 / 9; display: grid; place-items: center; background: var(--ghost-bg-subtle); border: var(--ghost-border-width) solid var(--ghost-border-subtle); border-radius: var(--ghost-radius-control); color: var(--ghost-text-muted); }
+.g-sheet { position: fixed; inset: auto 0 0; margin: 0 auto; width: min(var(--ghost-sheet-width), 100%); max-height: var(--ghost-sheet-max-height); overflow: auto; padding: var(--ghost-space-6); border: 0; border-radius: var(--ghost-radius-sheet) var(--ghost-radius-sheet) 0 0; background: var(--ghost-bg-surface); color: var(--ghost-text-primary); box-shadow: var(--ghost-shadow-overlay); }
 .g-sheet[open] { animation: g-sheet-enter var(--ghost-duration-base) var(--ghost-ease); }
 .g-sheet::backdrop { background: var(--ghost-overlay); }
-.g-sheet-handle { width: 32px; height: 4px; background: var(--ghost-border-subtle); border-radius: 2px; margin: -12px auto 16px; }
+.g-sheet-handle { width: var(--ghost-space-8); height: var(--ghost-space-1); background: var(--ghost-border-subtle); border-radius: calc(var(--ghost-space-1) / 2); margin: calc(-1 * var(--ghost-space-3)) auto var(--ghost-space-4); }
 .g-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--ghost-space-4); margin-bottom: var(--ghost-space-4); }
 .g-sheet-head .g-title { flex: 1; }
 .g-sheet-body { display: grid; gap: var(--ghost-space-4); }
 /* Conversation primitives: reusable by both the specimen and application. */
 .g-thread { display: grid; gap: var(--ghost-message-gap); min-width: 0; }
 .g-message { display: grid; gap: var(--ghost-content-gap); min-width: 0; }
-.g-message--user { justify-items: end; text-align: right; }
+/* The block sits on the right; text inside it stays left-aligned for readable multi-line input. */
+.g-message--user { justify-items: end; text-align: start; }
+.g-message--user > * { max-width: min(80%, var(--ghost-content-measure)); }
 .g-byline { display: flex; align-items: center; gap: var(--ghost-space-2); color: var(--ghost-text-muted); font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-label-line); }
 .g-byline .g-mark { width: var(--ghost-icon-small); height: var(--ghost-icon-small); }
-.g-composer { display: flex; align-items: center; min-width: 0; gap: var(--ghost-space-1); padding-block: var(--ghost-space-1); border-radius: var(--ghost-radius-content); background: transparent; transition: background var(--ghost-duration-fast) var(--ghost-ease); }
+.g-composer { display: flex; align-items: center; min-width: 0; gap: var(--ghost-space-1); padding: var(--ghost-space-1); border-radius: var(--ghost-radius-content); background: transparent; transition: background var(--ghost-duration-fast) var(--ghost-ease); }
 .g-composer:focus-within { background: var(--ghost-bg-subtle); }
+/* Without a leading “+” the text would sit on the edge; give it the same inset as the text composer. */
+.g-composer:not(:has(> .g-icon-button:first-child)) { padding-inline-start: var(--ghost-space-3); }
 .g-composer-input { flex: 1; width: 0; min-width: 0; min-height: var(--ghost-control-height); padding: var(--ghost-space-3) 0; border: 0; background: transparent; color: var(--ghost-text-primary); font-size: var(--ghost-type-body-size); line-height: var(--ghost-type-title-line); }
 .ghost-ui .g-composer-input:focus-visible { outline: none; }
+/* Focus ring wraps the whole composer instead of sitting inside the tinted field, next to + and send. */
+.g-composer:has(.g-composer-input:focus-visible) { outline: var(--ghost-focus-width) solid var(--ghost-focus-ring); outline-offset: var(--ghost-focus-offset); }
 .g-composer-input::placeholder { color: var(--ghost-text-muted); opacity: 1; }
 .g-composer .g-icon-button { color: var(--ghost-text-muted); }
 .g-composer .g-icon-button:disabled { color: var(--ghost-text-disabled); }
+/* Send is primary when it can be used (6.38:1 against the disabled arrow), so “ready” never looks like “unavailable”. */
+.g-composer .g-icon-button[type="submit"]:not(:disabled) { color: var(--ghost-text-primary); }
+/* States: data-state="sending" (spinner, aria-busy) · "running" (stop replaces send) · "failed" (double underline + .g-hint--error with 重试; set aria-invalid="true" on the input). */
+.g-composer .g-composer-stop { display: none; color: var(--ghost-text-primary); }
+.g-composer .g-composer-stop .g-icon { fill: currentColor; }
+.g-composer[data-state="running"] .g-composer-stop { display: inline-flex; }
+.g-composer[data-state="running"] .g-icon-button[type="submit"] { display: none; }
+.g-composer[data-state="sending"] .g-icon-button[type="submit"] { color: var(--ghost-text-primary); cursor: progress; }
+/* Failed uses the input-error language (3px double underline), never a ring, so it cannot be confused with or stack on the focus ring.
+   Bottom padding absorbs the 3px rule, so the composer does not change height. */
+.g-composer[data-state="failed"] { box-shadow: none; border-bottom: calc(var(--ghost-border-width) * 3) double var(--ghost-text-primary); border-radius: var(--ghost-radius-content) var(--ghost-radius-content) 0 0; padding-bottom: calc(var(--ghost-space-1) - var(--ghost-border-width) * 3); }
+.g-composer-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--ghost-space-2); min-width: 0; }
+.g-composer-feedback > .g-hint { flex: 1; min-width: 0; }
 .g-composer .g-icon { width: var(--ghost-icon-small); height: var(--ghost-icon-small); }
 .g-composer textarea.g-composer-input { height: var(--ghost-control-height); padding-block: var(--ghost-space-2); resize: none; scrollbar-width: none; }
 /* Application variants share the same foundations; pages only position them. */
 .g-btn--annotation { font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-label-line); color: var(--ghost-text-muted); }
 .g-btn[aria-pressed="true"] { color: var(--ghost-text-primary); }
 .g-btn[aria-pressed="true"] .g-icon { fill: currentColor; }
-.g-list-action { justify-content: flex-start; flex-wrap: wrap; width: 100%; text-align: left; padding: var(--ghost-space-4) 0; border-radius: 0; border-bottom: 1px solid var(--ghost-border-subtle); }
+.g-list-action { justify-content: flex-start; flex-wrap: wrap; width: 100%; text-align: left; padding: var(--ghost-space-4) 0; border-radius: 0; border-bottom: var(--ghost-border-width) solid var(--ghost-border-subtle); }
 .g-list-action > small { flex-basis: 100%; }
 .g-nav { display: flex; align-items: stretch; }
 .g-nav-item { flex: 1; flex-direction: column; position: relative; gap: var(--ghost-space-1); padding: var(--ghost-space-2) var(--ghost-space-1) var(--ghost-space-3); font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-label-line); }
 .g-nav-item[aria-current="page"] { color: var(--ghost-text-primary); }
 .g-nav-item[aria-current="page"]::after { content: ""; position: absolute; bottom: var(--ghost-space-1); width: var(--ghost-space-1); height: var(--ghost-space-1); border-radius: 50%; background: currentColor; }
-.g-timeline-item { display: grid; gap: var(--ghost-heading-gap); position: relative; border-left: 1px solid var(--ghost-border-subtle); padding: 0 0 var(--ghost-space-8) var(--ghost-space-6); }
+.g-timeline { display: grid; margin: 0; padding: 0 0 0 calc(var(--ghost-space-3) / 2); list-style: none; min-width: 0; }
+.g-timeline-item { display: grid; gap: var(--ghost-heading-gap); position: relative; border-left: var(--ghost-border-width) solid var(--ghost-border-subtle); padding: 0 0 var(--ghost-space-8) var(--ghost-space-6); }
 .g-timeline-item::before { content: ""; position: absolute; width: var(--ghost-space-1); height: var(--ghost-space-1); left: calc(var(--ghost-space-1) / -2); top: var(--ghost-space-2); border-radius: 50%; background: var(--ghost-text-secondary); }
+/* Status is carried by marker shape + visible text (.g-timeline-status), never colour: running = ring, done = solid dot, failed = cross. */
+.g-timeline-item[data-status]::before { --g-marker: var(--ghost-space-3); width: var(--g-marker); height: var(--g-marker); left: calc((var(--g-marker) + var(--ghost-border-width)) / -2); top: calc((var(--ghost-type-title-line) - var(--g-marker)) / 2); }
+.g-timeline-item[data-status="running"]::before { border: var(--ghost-border-width-strong) solid var(--ghost-text-secondary); background: var(--ghost-bg-surface); }
+.g-timeline-item[data-status="done"]::before { --g-marker: var(--ghost-space-2); background: var(--ghost-text-primary); }
+.g-timeline-item[data-status="failed"]::before { border-radius: 0; background: linear-gradient(45deg, transparent calc(50% - var(--ghost-border-width)), var(--ghost-text-primary) 0 calc(50% + var(--ghost-border-width)), transparent 0), linear-gradient(-45deg, transparent calc(50% - var(--ghost-border-width)), var(--ghost-text-primary) 0 calc(50% + var(--ghost-border-width)), transparent 0), var(--ghost-bg-surface); }
+.g-timeline-status { display: flex; align-items: center; gap: var(--ghost-space-1); margin: 0; color: var(--ghost-text-secondary); font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); }
+.g-timeline-item[data-status="done"] .g-timeline-status { color: var(--ghost-text-muted); }
+.g-timeline-item[data-status="failed"] .g-timeline-status { color: var(--ghost-text-primary); font-weight: var(--ghost-weight-strong); }
+.g-timeline-item[data-status="failed"] { border-left-style: dashed; }
 .g-overlay { display: flex; align-items: flex-end; background: var(--ghost-overlay); opacity: 0; visibility: hidden; transition: opacity var(--ghost-duration-base) var(--ghost-ease), visibility var(--ghost-duration-base); }
 .g-overlay.open { opacity: 1; visibility: visible; }
 .g-sheet--contained { position: relative; inset: auto; width: 100%; max-height: 85%; margin: 0; transform: translateY(var(--ghost-space-2)); transition: transform var(--ghost-duration-base) var(--ghost-ease); }
 .g-overlay.open .g-sheet--contained { transform: translateY(0); }
 .g-toast { padding: var(--ghost-space-2) var(--ghost-space-3); background: var(--ghost-bg-subtle); color: var(--ghost-text-secondary); border-radius: var(--ghost-radius-control); font-size: var(--ghost-type-label-size); line-height: var(--ghost-type-label-line); opacity: 0; pointer-events: none; translate: 0 var(--ghost-space-1); transition: opacity var(--ghost-duration-base) var(--ghost-ease), translate var(--ghost-duration-base) var(--ghost-ease); }
 .g-toast.show { opacity: 1; translate: 0 0; }
+/* Failure toast: surface + strong outline instead of the quiet fill, #i-alert, text starting with the failure. Use role="alert"; do not auto-dismiss. */
+.g-toast[data-tone="error"], .g-status[data-tone="error"] { display: flex; align-items: flex-start; gap: var(--ghost-space-2); background: var(--ghost-bg-surface); color: var(--ghost-text-primary); box-shadow: inset 0 0 0 var(--ghost-border-width-strong) var(--ghost-text-primary); }
+.g-toast[data-tone="error"] > .g-icon { margin-top: calc((var(--ghost-type-label-line) - var(--ghost-icon-small)) / 2); }
 .g-wave { display: flex; gap: var(--ghost-space-1); height: var(--ghost-space-8); align-items: center; justify-content: center; }
-.g-wave i { width: calc(var(--ghost-space-1) / 2); height: var(--ghost-space-3); background: var(--ghost-text-secondary); border-radius: var(--ghost-radius-control); }
+.g-wave i { width: calc(var(--ghost-space-1) / 2); height: var(--ghost-space-3); background: var(--ghost-text-disabled); border-radius: var(--ghost-radius-control); }
 .g-wave i:nth-child(2n) { height: var(--ghost-space-6); animation-delay: calc(var(--ghost-duration-listening) * -.4); }
 .g-wave i:nth-child(3n) { height: var(--ghost-space-4); animation-delay: calc(var(--ghost-duration-listening) * -.7); }
+/* Listening is visible without motion: bars switch from disabled grey to primary. Always pair with visible text in role="status". */
+.g-wave.playing i { background: var(--ghost-text-primary); }
+.g-wave-status { display: flex; align-items: center; gap: var(--ghost-space-3); min-width: 0; color: var(--ghost-text-secondary); font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); }
 .g-wave.playing i { animation-name: g-listen; animation-duration: var(--ghost-duration-listening); animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-direction: alternate; }
 /* Live conversation, navigation and execution details use the same reading rhythm. */
 .g-content--centered { justify-items: center; text-align: center; }
@@ -160,23 +213,30 @@ textarea.g-input { min-height: 104px; resize: vertical; }
 .g-conversation-link[aria-current="page"] { color: var(--ghost-text-primary); }
 .g-conversation-link[aria-current="page"]::after { content: ""; width: var(--ghost-space-1); height: var(--ghost-space-1); border-radius: 50%; background: currentColor; flex: none; }
 .g-message-copy { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-.g-feedback > .g-icon { margin-top: var(--ghost-space-1); }
+.g-feedback > .g-icon { margin-top: calc((var(--ghost-type-control-line) - var(--ghost-icon-small)) / 2); }
 .g-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ghost-space-2); min-width: 0; padding: var(--ghost-space-2) var(--ghost-space-3); border-radius: var(--ghost-radius-control); background: var(--ghost-bg-subtle); color: var(--ghost-text-secondary); }
 .g-status > p { flex: 1; min-width: 0; }
 .g-status > .g-btn { margin-left: auto; }
 .g-assistant-part { display: grid; gap: var(--ghost-content-gap); min-width: 0; }
 .g-assistant-part:empty { display: none; }
-.g-assistant-part[data-status="abandoned"] { color: var(--ghost-text-muted); }
+/* Stopped or interrupted generation is not only a lighter grey: dashed leading rule + a visible .g-assistant-status line
+   (#i-stop + “已停止生成” / “已中断”) placed first in the part. */
+.g-assistant-part:is([data-status="abandoned"], [data-status="interrupted"]) { padding-inline-start: var(--ghost-space-3); border-inline-start: var(--ghost-border-width) dashed var(--ghost-border-control); color: var(--ghost-text-muted); }
+.g-assistant-status { display: flex; align-items: center; gap: var(--ghost-space-1); margin: 0; color: var(--ghost-text-primary); font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); font-weight: var(--ghost-weight-strong); }
 .g-disclosure { min-width: 0; }
 .g-disclosure > summary { display: flex; align-items: center; flex-wrap: wrap; gap: var(--ghost-space-2); min-height: var(--ghost-control-height); padding: var(--ghost-space-2) 0; border-radius: var(--ghost-radius-control); color: var(--ghost-text-muted); font-size: var(--ghost-type-control-size); line-height: var(--ghost-type-control-line); list-style: none; cursor: pointer; transition: color var(--ghost-duration-fast) var(--ghost-ease), background var(--ghost-duration-fast) var(--ghost-ease); }
 .g-disclosure > summary::-webkit-details-marker { display: none; }
 .g-disclosure > summary:hover { color: var(--ghost-text-primary); background: var(--ghost-state-hover); }
 .g-disclosure > summary > .g-icon:first-child { transition: transform var(--ghost-duration-fast) var(--ghost-ease); }
 .g-disclosure[open] > summary > .g-icon:first-child { transform: rotate(90deg); }
-.g-disclosure-body { display: grid; gap: var(--ghost-space-4); min-width: 0; margin: var(--ghost-space-2) 0 var(--ghost-space-3) var(--ghost-space-2); padding-left: var(--ghost-space-4); border-left: 1px solid var(--ghost-border-subtle); }
+.g-disclosure-body { display: grid; gap: var(--ghost-space-4); min-width: 0; margin: var(--ghost-space-2) 0 var(--ghost-space-3) var(--ghost-space-2); padding-left: var(--ghost-space-4); border-left: var(--ghost-border-width) solid var(--ghost-border-subtle); }
 .g-tool-name { flex: 1; min-width: 0; font-family: var(--ghost-font-mono); color: var(--ghost-text-secondary); overflow-wrap: anywhere; }
-.g-tool[data-status="failed"] > summary .g-tag, .g-tool[data-status="interrupted"] > summary .g-tag { color: var(--ghost-text-primary); }
-.g-code { margin: 0; min-width: 0; max-height: 320px; overflow: auto; color: var(--ghost-text-secondary); font-family: var(--ghost-font-mono); font-size: var(--ghost-type-detail-size); line-height: var(--ghost-type-detail-line); white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2; }
+/* Tool failure is carried by shape + text, not grey: the tag gets a frame (solid = 失败, dashed = 已中断), strong weight,
+   an icon in markup (#i-alert for 失败, #i-stop for 已中断) and the expanded body's rule turns dashed, as in the timeline. */
+.g-tool:is([data-status="failed"], [data-status="interrupted"]) > summary .g-tag { padding-inline: var(--ghost-space-1); border: var(--ghost-border-width) solid var(--ghost-text-primary); border-radius: var(--ghost-radius-control); color: var(--ghost-text-primary); font-weight: var(--ghost-weight-strong); }
+.g-tool[data-status="interrupted"] > summary .g-tag { border-style: dashed; }
+.g-tool:is([data-status="failed"], [data-status="interrupted"]) > .g-disclosure-body { border-left-style: dashed; border-left-color: var(--ghost-border-control); }
+.g-code { margin: 0; min-width: 0; max-height: var(--ghost-code-max-height); overflow: auto; color: var(--ghost-text-secondary); font-family: var(--ghost-font-mono); font-size: var(--ghost-type-detail-size); line-height: var(--ghost-type-detail-line); white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2; }
 .g-cursor { display: inline-block; margin-left: var(--ghost-space-1); color: var(--ghost-text-muted); animation: g-blink var(--ghost-duration-listening) step-end infinite; }
 .g-composer--text { align-items: flex-end; padding-inline: var(--ghost-space-3) 0; }
 .g-composer--text textarea.g-composer-input { max-height: calc(var(--ghost-control-height) * 4); overflow-y: auto; }
@@ -184,8 +244,8 @@ textarea.g-input { min-height: 104px; resize: vertical; }
 .g-skip-link:focus { transform: translateY(0); }
 @keyframes g-blink { 50% { opacity: 0; } }
 @keyframes g-listen { to { transform: scaleY(.4); } }
-@keyframes g-sheet-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.g-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-@media (pointer: coarse) { .ghost-ui input, .ghost-ui select, .ghost-ui textarea { font-size: 16px; } }
+@keyframes g-sheet-enter { from { opacity: 0; transform: translateY(var(--ghost-space-2)); } to { opacity: 1; transform: translateY(0); } }
+.g-sr-only { position: absolute; width: var(--ghost-border-width); height: var(--ghost-border-width); padding: 0; margin: calc(-1 * var(--ghost-border-width)); overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (pointer: coarse) { .ghost-ui input, .ghost-ui select, .ghost-ui textarea { font-size: var(--ghost-type-touch-input-size); } }
 @media (prefers-reduced-motion: reduce) { .ghost-ui *, .ghost-ui *::before, .ghost-ui *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 .ghost-ui.reduce-motion *, .ghost-ui.reduce-motion *::before, .ghost-ui.reduce-motion *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
