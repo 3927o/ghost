@@ -35,9 +35,9 @@
   width: 100%;
 }
 
+/* Max width comes from 0.4 .g-message--user > * (min(80%, content-measure)). */
 .g-message--user .message-content {
   width: fit-content;
-  max-width: 85%;
 }
 
 .composer-area {

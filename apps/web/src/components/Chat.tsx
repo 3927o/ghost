@@ -5,14 +5,18 @@ import { RunTimeline } from './RunTimeline'
 import { ConversationState } from './ConversationState'
 import { GhostMark, Icon } from './Icon'
 
+export type SendResult = 'sent' | 'failed' | 'ignored'
+
 interface ChatProps {
   conversation?: Conversation
-  onSendMessage: (content: string) => void
+  onSendMessage: (content: string) => Promise<SendResult>
   disabled?: boolean
 }
 
 export function Chat({ conversation, onSendMessage, disabled = false }: ChatProps) {
   const [input, setInput] = useState('')
+  // 0.4 composer failed state: double underline + aria-invalid + .g-hint--error with 重试; the text stays in the field.
+  const [sendFailed, setSendFailed] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const isStreaming = conversation?.messages.some(message => message.streaming) ?? false
@@ -29,12 +33,24 @@ export function Chat({ conversation, onSendMessage, disabled = false }: ChatProp
     textarea.style.height = `${textarea.scrollHeight}px`
   }, [input])
 
+  const send = async () => {
+    const content = input.trim()
+    if (!content || isStreaming || disabled) return
+    setSendFailed(false)
+    const result = await onSendMessage(content)
+    if (result === 'failed') setSendFailed(true)
+    // Clear only if the user has not started editing in the meantime.
+    else if (result === 'sent') setInput(current => current.trim() === content ? '' : current)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim() || isStreaming || disabled) return
+    void send()
+  }
 
-    onSendMessage(input.trim())
-    setInput('')
+  const handleRetry = () => {
+    void send()
+    inputRef.current?.focus()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -77,14 +93,13 @@ export function Chat({ conversation, onSendMessage, disabled = false }: ChatProp
             <div className="g-content message-content">
               {msg.role === 'assistant' && !!msg.parts?.length ? <>
                 <RunTimeline parts={msg.parts} />
-                {msg.failure && <div className="g-status"><Icon name="info" small /><p className="g-detail g-message-copy">{msg.failure}</p></div>}
-              </> : msg.content && <div className={msg.error ? 'g-feedback' : undefined}>
-                {msg.error && <Icon name="info" small />}
-                <div className={`g-message-copy ${msg.role === 'user' ? 'g-detail g-secondary' : 'g-text'}`}>
+                {msg.failure && <div className="g-status" data-tone="error"><Icon name="alert" small /><p className="g-detail g-message-copy"><strong>错误：</strong>{msg.failure}</p></div>}
+              </> : msg.content && (msg.error
+                ? <div className="g-status" data-tone="error"><Icon name="alert" small /><p className="g-detail g-message-copy"><strong>错误：</strong>{msg.content}</p></div>
+                : <div className={`g-message-copy ${msg.role === 'user' ? 'g-detail g-secondary' : 'g-text'}`}>
                   {msg.content}
                   {msg.streaming && <span className="g-cursor" aria-hidden="true">▎</span>}
-                </div>
-              </div>}
+                </div>)}
               {msg.streaming && <span className="g-tag" role="status"><span className="g-spinner" aria-hidden="true" />正在回复…</span>}
             </div>
           </article>
@@ -92,22 +107,28 @@ export function Chat({ conversation, onSendMessage, disabled = false }: ChatProp
         <div ref={messagesEndRef} />
       </section>
       <div className="composer-area">
-        <form className="g-composer g-composer--text" onSubmit={handleSubmit} aria-label="发送消息">
+        <form className="g-composer g-composer--text" onSubmit={handleSubmit} aria-label="发送消息" data-state={disabled ? 'sending' : sendFailed ? 'failed' : undefined}>
           <label className="g-sr-only" htmlFor="message-input">消息内容</label>
           <textarea
             id="message-input"
             className="g-composer-input"
             ref={inputRef}
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={e => { setInput(e.target.value); if (sendFailed) setSendFailed(false) }}
             onKeyDown={handleKeyDown}
             placeholder="说说看，我在。"
             rows={1}
+            aria-invalid={sendFailed || undefined}
+            aria-describedby={sendFailed ? 'composer-error' : undefined}
           />
-          <button className="g-icon-button" type="submit" disabled={!input.trim() || isStreaming || disabled} aria-label="发送消息" title="发送消息">
+          <button className="g-icon-button" type="submit" disabled={!input.trim() || isStreaming || disabled} aria-label={disabled ? '正在发送' : '发送消息'} aria-busy={disabled || undefined} title="发送消息">
             {disabled ? <span className="g-spinner" aria-hidden="true" /> : <Icon name="arrow" small />}
           </button>
         </form>
+        {sendFailed && <div className="g-composer-feedback">
+          <p id="composer-error" className="g-hint g-hint--error g-feedback" role="alert"><Icon name="alert" small /><span><strong>错误：</strong>消息提交未确认，内容已保留。</span></p>
+          <button className="g-btn g-btn--primary" type="button" onClick={handleRetry} disabled={disabled}>重试</button>
+        </div>}
       </div>
     </div>
   )

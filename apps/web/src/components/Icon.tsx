@@ -8,6 +8,10 @@ const paths = {
   chevron: <path d="m9 6 6 6-6 6" />,
   check: <path d="m5 12 4 4 10-10" />,
   tool: <path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 14" />,
+  // Copied verbatim from design-system/index.html (#i-alert, #i-warning, #i-stop) — 0.4 state icons.
+  alert: <><path d="M10.3 4.2 2.6 17.6a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z" /><path d="M12 9.5v4.5M12 17.2v.1" /></>,
+  warning: <><path d="M12 2.8 21.2 12 12 21.2 2.8 12Z" /><path d="M12 8v4.6M12 15.8v.1" /></>,
+  stop: <rect x="6.5" y="6.5" width="11" height="11" rx="2" />,
 }
 
 export function Icon({ name, small = false }: { name: keyof typeof paths; small?: boolean }) {

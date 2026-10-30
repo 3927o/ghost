@@ -1,7 +1,7 @@
 /** Submit business commands, then observe durable runs independently of the browser request. */
 import { useState, useRef, useEffect } from 'react'
 import { isTerminalRun, reduceRunEvent, type MessageResponse, type RunStreamEvent, type RunView } from '@ghost/contracts'
-import { Chat } from './components/Chat'
+import { Chat, type SendResult } from './components/Chat'
 import { AppHeader } from './components/AppHeader'
 import { ConversationState } from './components/ConversationState'
 import { Icon } from './components/Icon'
@@ -94,8 +94,8 @@ function App() {
     return () => controller.abort()
   }, [activeRuns])
 
-  const handleSendMessage = async (content: string) => {
-    if (!conversation || loading || loadError || pending.current) return
+  const handleSendMessage = async (content: string): Promise<SendResult> => {
+    if (!conversation || loading || loadError || pending.current) return 'ignored'
     pending.current = true
     setSending(true)
     setNotice('')
@@ -119,8 +119,10 @@ function App() {
           { id: `assistant-${result.runId}`, runId: result.runId, role: 'assistant', content: '', timestamp: now, streaming: true },
         ],
       }))
+      return 'sent'
     } catch {
-      setNotice('消息提交未确认，请重试。')
+      // Shown by the composer in its 0.4 failed state (double underline + 错误 hint + 重试); same requestId on retry.
+      return 'failed'
     } finally {
       pending.current = false
       setSending(false)
@@ -136,7 +138,6 @@ function App() {
           <div className="g-status" role="status">
             <Icon name="info" small />
             <p className="g-detail">{notice}</p>
-            {retrySubmission.current && <button className="g-btn g-btn--primary" type="button" onClick={() => handleSendMessage(retrySubmission.current!.content)} disabled={sending}>重试提交</button>}
           </div>
         </div>}
         {loading ? (
@@ -147,7 +148,7 @@ function App() {
           /></div>
         ) : loadError ? (
           <div className="chat" role="alert"><ConversationState
-            icon={<Icon name="info" />}
+            icon={<Icon name="alert" />}
             title="暂时无法加载对话"
             description="请检查后端服务后重试。"
           >
