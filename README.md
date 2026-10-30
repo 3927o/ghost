@@ -50,6 +50,14 @@ docker compose up -d postgres redis
 npm run dev
 ```
 
+若不需要后端文件监听，可同时启动 API、Web 和 Agent Worker，避免文件变化打断正在执行的任务：
+
+```bash
+npm run start:all
+```
+
+`PORT` 设置 API 端口，`WEB_PORT` 设置前端开发服务端口（默认 `5173`）；前端代理会跟随 API 端口。
+
 也可以分别启动：
 
 ```bash

@@ -6,6 +6,7 @@
     "start": "node apps/api/main.ts",
     "start:api": "node apps/api/main.ts",
     "start:worker": "node apps/agent-worker/main.ts",
+    "start:all": "concurrently --kill-others --names api,web,worker \"npm run start:api\" \"npm run dev:web\" \"npm run start:worker\"",
     "dev": "concurrently --kill-others --names api,web,worker \"npm run dev:api\" \"npm run dev:web\" \"npm run dev:worker\"",
     "dev:api": "node --watch apps/api/main.ts",
     "dev:worker": "node --watch --watch-path=apps/agent-worker --watch-path=packages --watch-path=.env apps/agent-worker/main.ts",
